@@ -1,0 +1,192 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>O-HA-SHI合同会社 | 越境EC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --gold:#e3b04b; --gold2:#ffd98a; --ink:#050506; --paper:#f5f2ea; }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{ background:var(--ink); color:var(--paper); overflow-x:hidden; }
+  body{ font-family:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN",sans-serif; }
+  a{ color:inherit; text-decoration:none; }
+  .num-bg, .detail-title, .story p, .detail-cta p{ font-family:"Shippori Mincho",serif; }
+
+  .back-nav{ position:fixed; top:28px; left:28px; z-index:10; font-size:11px; letter-spacing:.15em; color:rgba(245,242,234,.6); display:flex; align-items:center; gap:8px; transition:color .3s ease; }
+  .back-nav:hover{ color:var(--gold2); }
+  .back-nav svg{ width:14px; height:14px; display:block; }
+
+  header.detail-hero{ position:relative; min-height:64vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:140px 6vw 60px; background:radial-gradient(ellipse at 50% 30%, #14101f 0%, #0a0812 45%, #050506 80%); overflow:hidden; }
+  header.detail-hero::before{ content:""; position:absolute; top:38%; left:50%; width:70vw; max-width:640px; height:70vw; max-height:640px; transform:translate(-50%,-50%); background:radial-gradient(circle, rgba(227,176,75,.14), transparent 62%); animation:glowPulse 7s ease-in-out infinite; pointer-events:none; }
+  @keyframes glowPulse{ 0%,100%{ opacity:.55; transform:translate(-50%,-50%) scale(1); } 50%{ opacity:1; transform:translate(-50%,-50%) scale(1.12); } }
+  .num-bg{ position:absolute; top:-20px; left:0; font-size:clamp(140px,28vw,360px); font-weight:800; color:rgba(245,242,234,.04); line-height:1; z-index:0; user-select:none; }
+  .eyebrow{ position:relative; z-index:1; font-size:11px; letter-spacing:.4em; color:var(--gold); margin-bottom:26px; }
+  .detail-title{ position:relative; z-index:1; font-size:clamp(30px,6vw,60px); font-weight:600; letter-spacing:.03em; line-height:1.5; max-width:900px; }
+  .detail-title em{ font-style:normal; font-weight:800; font-size:1.08em; color:var(--gold2); }
+  .detail-sub{ position:relative; z-index:1; margin-top:30px; font-size:15px; line-height:2.1; color:rgba(245,242,234,.65); max-width:520px; }
+
+  section.story{ padding:70px 6vw 100px; max-width:760px; margin:0 auto; }
+  .story-lead{ font-size:15.5px; line-height:2.1; color:rgba(245,242,234,.75); margin-bottom:64px; text-align:center; max-width:620px; margin-left:auto; margin-right:auto; opacity:0; transform:translateY(16px); transition:opacity .8s ease, transform .8s ease; }
+  .story-lead.is-in{ opacity:1; transform:translateY(0); }
+  .story-points{ display:flex; flex-direction:column; margin-bottom:64px; }
+  .story-point{ display:grid; grid-template-columns:56px 1fr; gap:22px; padding:30px 0; border-top:1px solid rgba(227,176,75,.18); opacity:0; transform:translateY(16px); transition:opacity .8s ease, transform .8s ease; }
+  .story-point.is-in{ opacity:1; transform:translateY(0); }
+  .story-points .story-point:last-child{ border-bottom:1px solid rgba(227,176,75,.18); }
+  .pt-num{ font-family:"Shippori Mincho",serif; font-size:24px; font-weight:700; color:rgba(227,176,75,.55); }
+  .story-point h3{ font-family:"Shippori Mincho",serif; font-size:17px; font-weight:600; margin-bottom:10px; color:var(--paper); letter-spacing:.02em; }
+  .story-point p{ font-size:13px; line-height:1.9; color:rgba(245,242,234,.6); }
+  .story-case{ position:relative; border:1px solid rgba(227,176,75,.35); border-radius:2px; padding:42px 32px; background:linear-gradient(165deg, rgba(227,176,75,.07), rgba(227,176,75,.015)); opacity:0; transform:translateY(16px); transition:opacity .8s ease, transform .8s ease; }
+  .story-case.is-in{ opacity:1; transform:translateY(0); }
+  .story-case::before{ content:""; position:absolute; inset:0; pointer-events:none; opacity:.8;
+    background:
+      linear-gradient(rgba(227,176,75,.8), rgba(227,176,75,.8)) top left / 20px 2px no-repeat,
+      linear-gradient(rgba(227,176,75,.8), rgba(227,176,75,.8)) top left / 2px 20px no-repeat,
+      linear-gradient(rgba(227,176,75,.8), rgba(227,176,75,.8)) top right / 20px 2px no-repeat,
+      linear-gradient(rgba(227,176,75,.8), rgba(227,176,75,.8)) top right / 2px 20px no-repeat,
+      linear-gradient(rgba(227,176,75,.8), rgba(227,176,75,.8)) bottom left / 20px 2px no-repeat,
+      linear-gradient(rgba(227,176,75,.8), rgba(227,176,75,.8)) bottom left / 2px 20px no-repeat,
+      linear-gradient(rgba(227,176,75,.8), rgba(227,176,75,.8)) bottom right / 20px 2px no-repeat,
+      linear-gradient(rgba(227,176,75,.8), rgba(227,176,75,.8)) bottom right / 2px 20px no-repeat;
+  }
+  .case-label{ position:relative; font-size:11px; letter-spacing:.35em; color:var(--gold); margin-bottom:18px; }
+  .story-case h3{ position:relative; font-family:"Shippori Mincho",serif; font-size:19px; font-weight:600; margin-bottom:14px; color:var(--gold2); }
+  .story-case p{ position:relative; font-size:13px; line-height:2; color:rgba(245,242,234,.65); }
+
+  section.detail-cta{ text-align:center; padding:100px 6vw 140px; background:linear-gradient(160deg,#0b0d10,#1a1408); }
+  .detail-cta p{ font-size:clamp(22px,3.6vw,36px); margin-bottom:44px; }
+  .detail-cta em{ font-style:normal; color:var(--gold2); }
+  .cta-link{ display:inline-flex; align-items:center; justify-content:center; width:170px; height:170px; border-radius:50%; border:1px solid var(--gold); font-size:12px; letter-spacing:.15em; color:var(--gold2); transition:background .3s ease, transform .2s ease; }
+  .cta-link:hover{ background:rgba(227,176,75,.08); transform:scale(1.05); }
+
+  footer{ text-align:center; padding:50px 20px 70px; font-size:10.5px; color:rgba(245,242,234,.4); line-height:1.9; background:var(--ink); border-top:1px solid rgba(227,176,75,.18); }
+  .nav-toggle{ position:fixed; top:26px; right:26px; z-index:60; width:52px; height:52px; border-radius:50%; border:1px solid rgba(227,176,75,.55); background:rgba(5,5,6,.4); backdrop-filter:blur(2px); cursor:pointer; transition:border-color .3s ease, transform .3s ease; }
+  .nav-toggle span{ position:absolute; top:50%; left:50%; width:2px; height:26px; margin-top:-13px; margin-left:-1px; background:linear-gradient(180deg, var(--gold2), var(--gold)); border-radius:1px; transition:transform .3s ease; }
+  .nav-toggle span:first-child{ transform:translateX(-6px) rotate(22deg); }
+  .nav-toggle span:last-child{ transform:translateX(5px) rotate(22deg); }
+  .nav-toggle:hover{ border-color:var(--gold2); }
+  .nav-toggle:hover span:first-child{ transform:translateX(-7px) rotate(12deg); }
+  .nav-toggle:hover span:last-child{ transform:translateX(6px) rotate(32deg); }
+  /* メニュー全体：金子眼鏡サイトの「縦書きの章立て」画面を参照した構成 */
+  .nav-panel{ position:fixed; inset:0; z-index:70; background:radial-gradient(ellipse at 50% 30%, #14101f 0%, #0a0812 55%, #050506 100%); opacity:0; pointer-events:none; transition:opacity .5s ease; overflow:hidden; }
+  .nav-panel.is-open{ opacity:1; pointer-events:auto; }
+  .nav-cols{ position:absolute; inset:0; z-index:1; display:flex; align-items:center; justify-content:center; gap:5vw; flex-wrap:wrap; padding:100px 6vw 120px; overflow-y:auto; }
+  .nav-mark{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:0; font-family:"Shippori Mincho",serif; font-weight:700; font-size:min(55vw,480px); line-height:1; color:var(--gold); opacity:.09; pointer-events:none; user-select:none; }
+  .nav-col{ display:flex; flex-direction:column; align-items:center; gap:16px; color:var(--paper); text-decoration:none; opacity:.8; transition:opacity .3s ease, transform .3s ease; }
+  .nav-col:hover{ opacity:1; transform:translateY(-6px); }
+  .nav-num{ font-family:"Shippori Mincho",serif; font-size:13px; color:rgba(245,242,234,.4); letter-spacing:.1em; }
+  .nav-kanji{ writing-mode:vertical-rl; font-family:"Shippori Mincho",serif; font-size:clamp(22px,2.6vw,32px); font-weight:600; letter-spacing:.1em; line-height:1.35; }
+  .nav-col-en{ writing-mode:vertical-rl; font-family:"Zen Kaku Gothic New",sans-serif; font-size:9px; letter-spacing:.3em; color:var(--gold); }
+  .nav-top, .nav-contact{ position:absolute; bottom:30px; font-size:11px; letter-spacing:.15em; color:rgba(245,242,234,.55); text-decoration:none; transition:color .25s ease; z-index:1; }
+  .nav-top{ left:26px; } .nav-contact{ right:26px; color:var(--gold2); }
+  .nav-top:hover, .nav-contact:hover{ color:var(--gold2); }
+  .nav-brand{ position:absolute; bottom:30px; left:50%; transform:translateX(-50%); font-family:"Shippori Mincho",serif; font-size:11px; letter-spacing:.25em; color:rgba(245,242,234,.4); z-index:1; }
+  @media(max-width:700px){ .nav-cols{ gap:6vw 5vw; } .nav-kanji{ font-size:19px; } }
+  .nav-close{ position:absolute; top:26px; right:26px; z-index:2; width:52px; height:52px; border-radius:50%; border:1px solid rgba(227,176,75,.55); background:transparent; color:var(--gold2); font-size:16px; cursor:pointer; }
+</style>
+</head>
+<body>
+
+<a class="back-nav" href="index.html">
+  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  O-HA-SHI
+</a>
+
+<button class="nav-toggle" id="navToggle" aria-label="メニューを開く"><span></span><span></span></button>
+<nav class="nav-panel" id="navPanel">
+  <div class="nav-mark" aria-hidden="true">お</div>
+  <button class="nav-close" id="navClose" aria-label="閉じる">✕</button>
+  <div class="nav-cols">
+    <a class="nav-col" href="2026-09-13-ohashi-company-profile.html">
+      <span class="nav-num">一</span>
+      <span class="nav-kanji">会社概要</span>
+      <span class="nav-col-en">COMPANY</span>
+    </a>
+    <a class="nav-col" href="2026-09-13-ohashi-detail-01-kaigai-shinshutsu.html">
+      <span class="nav-num">二</span>
+      <span class="nav-kanji">海外進出支援</span>
+      <span class="nav-col-en">SUPPORT</span>
+    </a>
+    <a class="nav-col" href="2026-09-13-ohashi-detail-02-ekkyo-ec.html">
+      <span class="nav-num">三</span>
+      <span class="nav-kanji">越境EC</span>
+      <span class="nav-col-en">COMMERCE</span>
+    </a>
+    <a class="nav-col" href="2026-09-13-ohashi-detail-03-matsuri-fes.html">
+      <span class="nav-num">四</span>
+      <span class="nav-kanji">祭り・フェス</span>
+      <span class="nav-col-en">FESTIVAL</span>
+    </a>
+    <a class="nav-col" href="2026-09-13-ohashi-detail-04-kodomo-bunka.html">
+      <span class="nav-num">五</span>
+      <span class="nav-kanji">こども文化</span>
+      <span class="nav-col-en">CULTURE</span>
+    </a>
+  </div>
+  <a class="nav-top" href="index.html">← TOP</a>
+  <div class="nav-brand">O-HA-SHI合同会社</div>
+  <a class="nav-contact" href="index.html#sec03">CONTACT →</a>
+</nav>
+
+<header class="detail-hero">
+  <div class="num-bg">02</div>
+  <div class="eyebrow">越境EC</div>
+  <h1 class="detail-title"><em>物語を、</em>届け続ける仕組み。</h1>
+  <p class="detail-sub">日本から世界へ。決済・物流・現地対応まで、<br>売り続けるための基盤を運営する。</p>
+</header>
+
+<section class="story">
+  <p class="story-lead">海外へ商品や体験を届け続けるには、決済・物流・現地対応など、<br>地味だけれど欠かせない基盤が必要です。O-HA-SHIは、その基盤そのものを自社で運営します。</p>
+  <div class="story-points">
+    <div class="story-point"><span class="pt-num">01</span><div><h3>決済基盤の運営</h3><p>海外向けの決済導線を自社で構築・運営します。高額な商品にも対応します。</p></div></div>
+    <div class="story-point"><span class="pt-num">02</span><div><h3>現地の登録・税務の壁をなくす</h3><p>出展者・販売者が、現地の複雑な手続きなしに販売できる仕組みをつくります。</p></div></div>
+    <div class="story-point"><span class="pt-num">03</span><div><h3>イベント後も、売り続けられる</h3><p>一過性の販売で終わらせず、継続的な販売導線を残します。</p></div></div>
+  </div>
+  <div class="story-case">
+    <div class="case-label">CASE</div>
+    <h3>スリランカのジュエリー、インドの日本文化イベント</h3>
+    <p>スリランカのジュエリーブランドの越境EC決済、そしてインド・デリーで開催された日本文化イベントの出展者向け決済基盤を運営しています。「現地での登録・税務手続きが不要」「イベント後も販売を続けられる」という仕組みが、実際に使われています。</p>
+  </div>
+</section>
+
+<section class="detail-cta">
+  <p>まだない物語が、<br><em>ここから、架かる。</em></p>
+  <a class="cta-link" href="index.html#sec03">CONTACT</a>
+</section>
+
+<footer>
+  O-HA-SHI合同会社　法人番号 2010003052416<br>
+  東京都千代田区神田須田町一丁目7番8号 Vort秋葉原IV 2階
+</footer>
+
+<script>
+  // 他ページから遷移してきたとき、必ずページの一番上から表示されるようにする
+  if('scrollRestoration' in history){ history.scrollRestoration = 'manual'; }
+  window.scrollTo(0, 0);
+  window.addEventListener('pageshow', ()=>{ window.scrollTo(0, 0); });
+
+  const revealTargets = Array.from(document.querySelectorAll('.story-lead, .story-point, .story-case'));
+  function checkReveal(){
+    const vh = window.innerHeight;
+    revealTargets.forEach(el=>{
+      if(el.classList.contains('is-in')) return;
+      const r = el.getBoundingClientRect();
+      if(r.top < vh * 0.85 && r.bottom > 0) el.classList.add('is-in');
+    });
+  }
+  window.addEventListener('scroll', checkReveal, {passive:true});
+  window.addEventListener('resize', checkReveal);
+  if(document.fonts && document.fonts.ready){ document.fonts.ready.then(checkReveal); }
+  window.addEventListener('load', checkReveal);
+  setTimeout(checkReveal, 800);
+
+  const navToggle = document.getElementById('navToggle');
+  const navPanel = document.getElementById('navPanel');
+  const navClose = document.getElementById('navClose');
+  navToggle.addEventListener('click', ()=>navPanel.classList.add('is-open'));
+  navClose.addEventListener('click', ()=>navPanel.classList.remove('is-open'));
+</script>
+</body>
+</html>

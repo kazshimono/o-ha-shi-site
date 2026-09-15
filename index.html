@@ -1,0 +1,814 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>O-HA-SHI合同会社</title>
+<meta name="description" content="海外進出支援・越境EC・祭り/フェス企画運営・こども文化体験。O-HA-SHI合同会社は、国と国、文化と文化のあいだに橋をかける会社です。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --gold:#e3b04b; --gold2:#ffd98a; --ink:#050506; --paper:#f5f2ea; }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{ background:var(--ink); color:var(--paper); overflow-x:hidden; }
+  body{ font-family:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN",sans-serif; }
+  .hero-line, .big-line, .num-bg, .meaning-kanji, .bridge-title, .back-statement{ font-family:"Shippori Mincho",serif; }
+  a{color:inherit;text-decoration:none;}
+
+  header.hero{ position:sticky; top:0; z-index:1; height:100svh; overflow:hidden; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:22px; background:radial-gradient(ellipse at 50% 40%, #14101f 0%, #0a0812 45%, #050506 80%); }
+  #canvas3d{ position:absolute; inset:0; width:100%; height:100%; z-index:1; }
+  /* 宇宙（星空）ではなく平面の世界地図を背景に（海外進出支援・越境ECという事業内容にも合う）。
+     国境線入りの詳細な世界地図（Fritz Lekschas氏のsimple-world-map、CC BY-SA 3.0、ISO 3166-1データ）を使用。
+     試行錯誤の経緯（日付は全て2026-09-15）：
+     ・横幅基準で縦に敷き詰める方式→横長PCで海だけの部分に当たり「真っ暗」になる不具合
+     ・background-position数値指定→PCでは縦横比の関係でほぼずらせず日本が中央に来ない
+     ・viewBoxに余白を足して日本を中心に→今度は日本の右側が空白に見える
+     ・ohashi-world-map.svg内で地図を<use>複製してつなげ、余白なしで日本を中心に→
+       ここまでで「日本が中心・余白なし」は解決
+     ・background-size:150%前後の固定値（画面の横幅基準）→PCと携帯でズーム感は揃ったが、
+       携帯では地図の高さが画面の高さに届かず、上下に隙間ができる／repeat-yで埋めると
+       今度は「同じ地図が縦に3つ並んでる」と不自然に見える、の板挟みになった。
+     結論：「PCとまったく同じ範囲（アメリカ大陸まで）・同じズーム率を携帯でも見せる」ことと
+     「携帯で上下に隙間なく1枚だけ収める」は両立しない（携帯は画面が縦に長く、地図は横に
+     長い形なので、隙間なく埋めようとすると必然的に画面の縦幅基準の拡大＝携帯の方がPCより
+     ズームインした表示になってしまう）。一度cover（隙間なし優先）にしたが、Kazさんに
+     「PCと同じ範囲を見せる方を優先したい（携帯で多少の余白は許容する）」と明確に選んで
+     いただいたため、background-size を画面の横幅基準の固定倍率（155%）に戻した。
+     携帯のように画面が縦に長い場合、地図の高さが画面の高さに届かず上下に余白が出るが、
+     HERO自体がもともと持つ暗いグラデーション背景がそのまま見えるだけなので、
+     不自然な繰り返し（repeat-y）や不完全な余白ではなく、意図した見え方として扱う。
+     →その後「このままで、限界まで上下に引き伸ばして」との要望で、横方向の拡大率
+     （＝PCと同じ範囲を見せる部分）はそのまま、縦だけ画面の高さぴったりに引き伸ばす
+     （background-sizeの縦だけ100%指定）ことにした。ところがCSS上はこれで正しいはずが、
+     実機（携帯）で確認したところ上下の余白が消えなかった。原因はCSSではなくSVG側：
+     ohashi-world-map.svgに`preserveAspectRatio`を指定していなかったため、デフォルト値
+     （xMidYMid meet＝縦横比を保ったまま収める）が効いてしまい、background-sizeで
+     155% 100%という「縦横比の違う枠」を指定しても、SVGが自分の縦横比を保とうとして
+     枠の中でさらに縮小・中央寄せ（＝上下に余白＝レターボックス）していた。
+     ohashi-world-map.svgのルート要素に preserveAspectRatio="none" を追加し、
+     SVG自身にも「縦横比を無視して枠いっぱいに引き伸ばす」よう指定して解決 */
+  .world-map-bg{
+    position:absolute; inset:0; z-index:0;
+    background-image:url("ohashi-world-map.svg");
+    background-repeat:no-repeat;
+    background-size:155% 100%;
+    background-position:center;
+  }
+  .hero-type{ position:relative; z-index:3; text-align:center; pointer-events:none; mix-blend-mode:difference; animation:heroFloat 6s ease-in-out 2.6s infinite; }
+  .hero-line{ display:block; font-weight:500; letter-spacing:.04em; line-height:1.4; font-size:clamp(24px,6.4vw,58px); overflow:hidden; white-space:nowrap; }
+  .hero-line span{ display:inline-block; }
+  .hero-line .char{ display:inline-block; transform:translateY(45%); opacity:0; animation:riseIn 1.6s ease-out forwards; animation-delay:calc(var(--line-delay,0s) + var(--ci,0) * .035s); }
+  .hero-line:nth-child(1) .char{ --line-delay:.2s; }
+  .hero-line:nth-child(2) .char{ --line-delay:.5s; }
+  .hero-line:nth-child(3) .char{ --line-delay:.8s; }
+  .hero-line:nth-child(4) .char{ --line-delay:1.1s; color:var(--gold2); }
+  @keyframes riseIn{ to{ transform:translateY(0); opacity:1; } }
+  /* 文字が浮かんでいるようにゆったり上下する常時アニメーション（「文章に動きが欲しい」の要望） */
+  @keyframes heroFloat{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-10px); } }
+  .hero-eyebrow{ position:relative; z-index:3; font-size:11px; letter-spacing:.4em; color:var(--gold); opacity:0; animation:fadeIn 1s ease .9s forwards; }
+  /* HEROの世界観を壊さない範囲で、何の会社かだけ一行で伝える小さな説明 */
+  .hero-tagline{ position:relative; z-index:3; font-size:12px; letter-spacing:.08em; color:rgba(245,242,234,.55); opacity:0; animation:fadeIn 1s ease 1.1s forwards; }
+  @keyframes fadeIn{ to{ opacity:1; } }
+  .scroll-cue{ position:absolute; bottom:30px; left:50%; transform:translateX(-50%); z-index:3; font-size:10px; letter-spacing:.3em; color:rgba(245,242,234,.5); opacity:0; animation:fadeIn 1s ease 1.3s forwards; }
+  header.hero{ cursor:none; }
+  .cursor-tag{ position:fixed; top:0; left:0; z-index:50; width:74px; height:74px; border-radius:50%; border:1px solid rgba(227,176,75,.55); display:flex; align-items:center; justify-content:center; font-size:10px; letter-spacing:.15em; color:var(--gold2); background:rgba(5,5,6,.35); backdrop-filter:blur(2px); pointer-events:none; opacity:0; transform:translate(-50%,-50%) scale(.8); transition:opacity .25s ease, transform .25s ease; }
+  .cursor-tag.is-active{ opacity:1; transform:translate(-50%,-50%) scale(1); }
+  @media(hover:none){ header.hero{ cursor:auto; } .cursor-tag{ display:none; } }
+
+  section{ position:sticky; top:0; padding:140px 6vw; min-height:100vh; box-sizing:border-box; }
+  /* 各セクションをその場に固定し、次のセクションが下から覆いかぶさるように上がってくる「積み重ね」構成（Kaneko Opticalの「上にあがってくる」動きを参照） */
+  #sec01{ z-index:2; }
+  #sec02{ z-index:3; }
+  #sec03{ z-index:4; }
+  .num-bg{ position:absolute; top:-40px; left:0; font-size:clamp(120px,26vw,340px); font-weight:800; color:rgba(245,242,234,.04); line-height:1; z-index:0; user-select:none; will-change:transform; }
+  .section-content{ position:relative; z-index:1; text-align:center; }
+  .eyebrow{ position:relative; display:inline-flex; align-items:center; gap:14px; font-size:11px; letter-spacing:.4em; color:var(--gold); margin-bottom:26px; }
+  .eyebrow::before{ content:""; width:0; height:1px; background:var(--gold); transition:width .8s cubic-bezier(.16,1,.3,1); }
+  .eyebrow.is-in::before{ width:40px; }
+
+  /* kinetic scroll reveal for headlines: 1文字ずつ独立してせり上がる（賞受賞サイトの「文字単位アニメーション」技術を参照） */
+  .kinetic{ overflow:hidden; display:inline-block; }
+  .kinetic .kline{ display:block; overflow:hidden; white-space:nowrap; }
+  .kinetic .kline > span{ display:inline-block; }
+  .kinetic .char{ display:inline-block; transform:translateY(115%); opacity:0; transition:transform .7s cubic-bezier(.16,1,.3,1), opacity .7s ease; transition-delay:calc(var(--i,0) * .08s + var(--ci,0) * .022s); will-change:transform; }
+  .kinetic.is-in .char{ transform:translateY(0); opacity:1; }
+
+  .big-line{ font-size:clamp(28px,6.4vw,60px); font-weight:500; letter-spacing:.03em; line-height:1.4; max-width:1200px; margin-left:auto; margin-right:auto; }
+  .big-line em{ font-style:normal; font-weight:800; font-size:1.12em; color:var(--ink); position:relative; padding:0 .1em; white-space:nowrap; }
+  .big-line em::before{ content:""; position:absolute; inset:.02em -.04em; background:var(--gold2); z-index:-1; transform:scaleX(0); transform-origin:left; transition:transform .7s cubic-bezier(.16,1,.3,1) .4s; }
+  .big-line em.no-hl{ position:relative; color:var(--gold); overflow:hidden; }
+  .big-line em.no-hl::before{ display:none; }
+  .big-line em.no-hl::after{ content:""; position:absolute; inset:0; background:linear-gradient(100deg, transparent 40%, rgba(255,217,138,.8) 50%, transparent 60%); background-size:260% 100%; animation:goldShimmer 5s linear infinite; pointer-events:none; }
+  @keyframes goldShimmer{ from{ background-position:140% 0; } to{ background-position:-140% 0; } }
+  .kinetic.is-in em::before{ transform:scaleX(1); }
+  p.lead{ margin-top:34px; margin-left:auto; margin-right:auto; font-size:15px; line-height:2.1; color:rgba(245,242,234,.7); max-width:560px; opacity:0; transform:translateY(14px); transition:opacity .8s ease .4s, transform .8s ease .4s; }
+  .section-content.is-in p.lead{ opacity:1; transform:translateY(0); }
+  .mantra{ opacity:0; transform:translateY(14px); transition:opacity .8s ease .6s, transform .8s ease .6s; }
+  .section-content.is-in .mantra{ opacity:1; transform:translateY(0); }
+
+  .bridges{
+    background:
+      radial-gradient(1.6px 1.6px at 12% 6%, rgba(201,162,75,.4), transparent),
+      radial-gradient(1.2px 1.2px at 28% 13%, rgba(201,162,75,.3), transparent),
+      radial-gradient(1.6px 1.6px at 62% 4%, rgba(201,162,75,.35), transparent),
+      radial-gradient(1.2px 1.2px at 82% 11%, rgba(201,162,75,.28), transparent),
+      radial-gradient(1.6px 1.6px at 46% 18%, rgba(201,162,75,.3), transparent),
+      radial-gradient(1.2px 1.2px at 94% 22%, rgba(201,162,75,.22), transparent),
+      radial-gradient(1.2px 1.2px at 5% 24%, rgba(201,162,75,.22), transparent),
+      linear-gradient(180deg, #0e0c12 0%, #14101f 3%, var(--paper) 20%, var(--paper) 100%);
+    color:var(--ink);
+    overflow:hidden;
+  }
+  .bridges .num-bg{ color:rgba(5,5,6,.04); }
+  /* 常時ゆったり漂う光（他ページの3D演出とバランスを取るための、控えめな常時アニメーション） */
+  .bridges::before, .bridges::after{
+    content:""; position:absolute; z-index:0; border-radius:50%; pointer-events:none;
+    background:radial-gradient(circle, rgba(227,176,75,.14), transparent 65%);
+  }
+  .bridges::before{ width:52vw; height:52vw; top:8%; left:-10%; animation:driftGlowA 16s ease-in-out infinite; }
+  .bridges::after{ width:40vw; height:40vw; bottom:0%; right:-8%; animation:driftGlowB 20s ease-in-out infinite; }
+  @keyframes driftGlowA{ 0%,100%{ transform:translate(0,0) scale(1); opacity:.6; } 50%{ transform:translate(4%,6%) scale(1.15); opacity:1; } }
+  @keyframes driftGlowB{ 0%,100%{ transform:translate(0,0) scale(1); opacity:.5; } 50%{ transform:translate(-5%,-5%) scale(1.1); opacity:.85; } }
+  #sec02{
+    background:
+      radial-gradient(1.4px 1.4px at 15% 4%, rgba(245,242,234,.5), transparent),
+      radial-gradient(1px 1px at 35% 9%, rgba(245,242,234,.35), transparent),
+      radial-gradient(1.4px 1.4px at 55% 3%, rgba(245,242,234,.45), transparent),
+      radial-gradient(1px 1px at 75% 8%, rgba(245,242,234,.3), transparent),
+      radial-gradient(1.4px 1.4px at 90% 5%, rgba(245,242,234,.4), transparent),
+      radial-gradient(1px 1px at 6% 13%, rgba(245,242,234,.25), transparent),
+      linear-gradient(180deg, var(--paper) 0%, #12100c 6%, var(--ink) 16%, var(--ink) 100%);
+  }
+  .bridges .eyebrow::before{ background:#a5813a; }
+  .bridges .lead{ color:#4a453d; }
+  .mantra{ margin-top:44px; padding-top:34px; border-top:1px solid rgba(5,5,6,.12); font-family:"Shippori Mincho",serif; font-size:19px; letter-spacing:.14em; line-height:2.4; color:#a5813a; max-width:520px; }
+  .meanings{ position:relative; display:flex; flex-direction:column; gap:0; margin:0 auto 50px; width:fit-content; }
+  .meanings::before{ content:""; position:absolute; left:96px; top:26px; bottom:26px; width:1px; background:linear-gradient(180deg, transparent, rgba(165,129,58,.4) 12%, rgba(165,129,58,.4) 88%, transparent); }
+  .meaning-item{ position:relative; display:grid; grid-template-columns:96px 1fr; align-items:center; column-gap:26px; padding:18px 0; opacity:0; transform:translateY(10px); transition:opacity .7s ease, transform .7s ease; }
+  .meaning-item::after{ content:""; position:absolute; left:96px; top:50%; width:7px; height:7px; background:#a5813a; border:2px solid var(--paper); transform:translate(-50%,-50%) rotate(45deg); z-index:1; animation:nodePulse 3.2s ease-in-out infinite; }
+  .meaning-item:nth-child(2)::after{ animation-delay:.3s; }
+  .meaning-item:nth-child(3)::after{ animation-delay:.6s; }
+  @keyframes nodePulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(165,129,58,.5); } 50%{ box-shadow:0 0 10px 3px rgba(165,129,58,.55); } }
+  .meaning-item[style*="--i:0"]{ transition-delay:.1s; }
+  .meaning-item[style*="--i:1"]{ transition-delay:.3s; }
+  .meaning-item[style*="--i:2"]{ transition-delay:.5s; }
+  .section-content.is-in .meaning-item{ opacity:1; transform:translateY(0); }
+  .meaning-kanji{ text-align:right; font-size:30px; font-weight:600; letter-spacing:.04em; color:var(--ink); }
+  .meaning-text{ text-align:left; font-size:12px; letter-spacing:.05em; color:#8a7d6d; }
+  /* 四つの物語：45R「デニムかるた」を参考に、4枚のカードを円状に散らして常時全部見せる構成に変更 */
+  .story-scatter{ position:relative; width:min(92vw,420px); height:520px; margin:56px auto 0; }
+  @media(min-width:820px){ .story-scatter{ width:min(84vw,760px); height:480px; } }
+  .story-scatter .story-card{ position:absolute; top:0; left:0; width:clamp(150px,40vw,192px); aspect-ratio:3/4; border:1px solid rgba(227,176,75,.4); border-radius:4px; padding:18px; display:flex; flex-direction:column; justify-content:space-between; background:rgba(10,8,6,.82); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); box-shadow:0 24px 50px -14px rgba(0,0,0,.65); --en:1; transform:translate(-50%,-50%) translate(calc(var(--dx,0px) * (1 - var(--en))), calc(var(--dy,0px) * (1 - var(--en)))) rotate(var(--rot,0deg)) scale(calc(0.82 + 0.18 * var(--en))); transition:box-shadow .35s ease; animation:storyCardBreathe 5s ease-in-out infinite; animation-delay:var(--bd,0s); }
+  .story-scatter .story-card:hover, .story-scatter .story-card:focus-visible{ transform:translate(-50%,-50%) rotate(0deg) scale(1.08) !important; transition:transform .35s cubic-bezier(.16,1,.3,1); z-index:20 !important; box-shadow:0 34px 64px -12px rgba(0,0,0,.75); }
+  .story-scatter .story-card[data-i="0"]{ top:26%; left:28%; --rot:-8deg; --bd:0s; --dx:-90px; --dy:-70px; z-index:2; }
+  .story-scatter .story-card[data-i="1"]{ top:19%; left:72%; --rot:6deg; --bd:1.2s; --dx:90px; --dy:-70px; z-index:3; }
+  .story-scatter .story-card[data-i="2"]{ top:76%; left:26%; --rot:5deg; --bd:2.4s; --dx:-90px; --dy:80px; z-index:1; }
+  .story-scatter .story-card[data-i="3"]{ top:81%; left:74%; --rot:-6deg; --bd:3.6s; --dx:90px; --dy:90px; z-index:4; }
+  /* PC（横幅820px以上、カード同士の間隔に余裕がある画面）だけ、4枚をもう少し中央寄りに集める。
+     携帯は元々の間隔でも十分近いため（むしろこれ以上寄せるとカード同士が重なりすぎる）現状維持 */
+  @media(min-width:820px){
+    .story-scatter .story-card[data-i="0"]{ top:30%; left:38%; }
+    .story-scatter .story-card[data-i="1"]{ top:24%; left:62%; }
+    .story-scatter .story-card[data-i="2"]{ top:72%; left:37%; }
+    .story-scatter .story-card[data-i="3"]{ top:76%; left:63%; }
+  }
+  .story-scatter .story-card::before{ content:""; position:absolute; inset:0; pointer-events:none;
+    background:
+      linear-gradient(rgba(227,176,75,.9), rgba(227,176,75,.9)) top left / 16px 2px no-repeat,
+      linear-gradient(rgba(227,176,75,.9), rgba(227,176,75,.9)) top left / 2px 16px no-repeat,
+      linear-gradient(rgba(227,176,75,.9), rgba(227,176,75,.9)) top right / 16px 2px no-repeat,
+      linear-gradient(rgba(227,176,75,.9), rgba(227,176,75,.9)) top right / 2px 16px no-repeat,
+      linear-gradient(rgba(227,176,75,.9), rgba(227,176,75,.9)) bottom left / 16px 2px no-repeat,
+      linear-gradient(rgba(227,176,75,.9), rgba(227,176,75,.9)) bottom left / 2px 16px no-repeat,
+      linear-gradient(rgba(227,176,75,.9), rgba(227,176,75,.9)) bottom right / 16px 2px no-repeat,
+      linear-gradient(rgba(227,176,75,.9), rgba(227,176,75,.9)) bottom right / 2px 16px no-repeat;
+  }
+  @keyframes storyCardBreathe{ 0%,100%{ box-shadow:0 24px 50px -14px rgba(0,0,0,.65), 0 0 0 rgba(227,176,75,0); } 50%{ box-shadow:0 24px 50px -14px rgba(0,0,0,.65), 0 0 26px rgba(227,176,75,.28); } }
+  .story-card-title{ position:relative; z-index:1; font-family:"Shippori Mincho",serif; font-size:15px; font-weight:600; letter-spacing:.02em; line-height:1.4; }
+  .story-card-desc{ position:relative; z-index:1; font-size:10px; line-height:1.7; letter-spacing:.02em; color:rgba(245,242,234,.55); }
+  .story-card-num{ position:relative; z-index:1; align-self:flex-end; font-family:"Shippori Mincho",serif; font-size:28px; font-weight:700; color:rgba(245,242,234,.28); }
+  /* 写真ではなく、金属的な線画アイコンで各事業を表現（実写よりイラスト調がいいとのご要望） */
+  .story-card-bg{ position:absolute; inset:0; z-index:0; background:radial-gradient(circle at 30% 20%, rgba(227,176,75,.3), transparent 55%), radial-gradient(circle at 80% 70%, rgba(165,129,58,.24), transparent 55%); }
+  .story-card-icon{ position:relative; z-index:1; display:flex; align-items:center; justify-content:center; flex:0 0 auto; margin:2px 0; }
+  .icon-badge{ position:relative; width:min(40%,78px); aspect-ratio:1/1; border-radius:50%; overflow:hidden; display:flex; align-items:center; justify-content:center; border:1.5px solid rgba(227,176,75,.55); background:radial-gradient(circle at 34% 30%, rgba(227,176,75,.16), rgba(0,0,0,0) 70%); filter:drop-shadow(0 10px 18px rgba(0,0,0,.5)); }
+  .icon-badge svg{ width:56%; height:56%; }
+
+  /* ０１ ORIGIN：小さな箱の中の文字ではサイト全体の「巨大文字」の世界観と釣り合わないため、
+     HERO・02と同じ大きさの文字で直接見せる方式に変更。中身の差し替え自体は維持 */
+  .origin-big{ position:relative; margin:56px auto 0; max-width:1000px; min-height:220px; overflow:hidden; transition:min-height .45s ease; }
+  /* 中身の切り替えは横スライド（次の内容は右から入り、前の内容は左へ抜ける）。デジタル演出は撤回し、シンプルな動きに統一 */
+  .origin-panel{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0; transform:translateX(90px); transition:opacity .6s ease, transform .6s cubic-bezier(.16,1,.3,1); pointer-events:none; }
+  .origin-panel.is-active{ opacity:1; transform:translateX(0); pointer-events:auto; }
+  .origin-panel.is-leaving{ opacity:0; transform:translateX(-90px); }
+  .origin-panel-text{ font-family:"Shippori Mincho",serif; font-size:clamp(26px,5.6vw,54px); font-weight:600; letter-spacing:.02em; line-height:1.5; color:var(--ink); text-align:center; }
+  .origin-panel-text .line{ display:block; }
+  .origin-tags{ display:flex; justify-content:center; gap:10px; margin-top:30px; flex-wrap:wrap; }
+  .origin-tags span{ font-size:11.5px; letter-spacing:.05em; padding:8px 16px; border:1px solid rgba(165,129,58,.55); border-radius:20px; color:#7a5a22; background:rgba(227,176,75,.1); }
+
+  .cta{ position:relative; text-align:center; background:linear-gradient(160deg,#0b0d10,#1a1408); overflow:hidden; }
+  #canvas3d-cta{ position:absolute; inset:0; z-index:0; opacity:.55; }
+  .cta .section-content{ position:relative; z-index:1; }
+  .cta .eyebrow{ opacity:0; transform:translateX(-32px); transition:opacity .8s ease, transform .8s ease; }
+  .cta .big-line{ opacity:0; transform:translateX(56px); transition:opacity .9s ease .12s, transform .9s ease .12s; }
+  .cta .magnetic-wrap{ opacity:0; transform:translateY(18px); transition:opacity .8s ease .3s, transform .8s ease .3s; }
+  .cta .section-content.is-in .eyebrow,
+  .cta .section-content.is-in .big-line,
+  .cta .section-content.is-in .magnetic-wrap{ opacity:1; transform:translate(0,0); }
+  .magnetic-wrap{ position:relative; display:inline-block; margin-top:50px; }
+  .magnetic-ring{ position:absolute; inset:-14px; border-radius:50%; border:1px solid rgba(227,176,75,.35); animation:pulseRing 2.6s ease-in-out infinite; }
+  @keyframes pulseRing{ 0%,100%{ transform:scale(1); opacity:.5; } 50%{ transform:scale(1.08); opacity:1; } }
+  .magnetic-btn{ position:relative; display:inline-flex; align-items:center; justify-content:center; width:220px; height:220px; border-radius:50%; border:1px solid var(--gold); font-size:13px; letter-spacing:.15em; color:var(--gold2); transition:transform .15s ease, background .3s ease; }
+  .magnetic-btn:hover{ background:rgba(227,176,75,.08); }
+
+  footer{ text-align:center; padding:50px 20px 70px; font-size:10.5px; color:rgba(245,242,234,.4); line-height:1.9; background:var(--ink); border-top:1px solid rgba(227,176,75,.18); opacity:0; transform:translateY(16px); transition:opacity .9s ease, transform .9s ease; }
+  footer.is-in{ opacity:1; transform:translateY(0); }
+
+  /* サイト内共通ナビゲーション：右上のメニューから各ページへ */
+  .nav-toggle{ position:fixed; top:26px; right:26px; z-index:60; width:52px; height:52px; border-radius:50%; border:1px solid rgba(227,176,75,.55); background:rgba(5,5,6,.4); backdrop-filter:blur(2px); cursor:pointer; transition:border-color .3s ease, transform .3s ease; }
+  .nav-toggle span{ position:absolute; top:50%; left:50%; width:2px; height:26px; margin-top:-13px; margin-left:-1px; background:linear-gradient(180deg, var(--gold2), var(--gold)); border-radius:1px; transition:transform .3s ease; }
+  .nav-toggle span:first-child{ transform:translateX(-6px) rotate(22deg); }
+  .nav-toggle span:last-child{ transform:translateX(5px) rotate(22deg); }
+  .nav-toggle:hover{ border-color:var(--gold2); }
+  .nav-toggle:hover span:first-child{ transform:translateX(-7px) rotate(12deg); }
+  .nav-toggle:hover span:last-child{ transform:translateX(6px) rotate(32deg); }
+  /* メニュー全体：金子眼鏡サイトの「縦書きの章立て」画面を参照した構成 */
+  .nav-panel{ position:fixed; inset:0; z-index:70; background:radial-gradient(ellipse at 50% 30%, #14101f 0%, #0a0812 55%, #050506 100%); opacity:0; pointer-events:none; transition:opacity .5s ease; overflow:hidden; }
+  .nav-panel.is-open{ opacity:1; pointer-events:auto; }
+  .nav-cols{ position:absolute; inset:0; z-index:1; display:flex; align-items:center; justify-content:center; gap:5vw; flex-wrap:wrap; padding:100px 6vw 120px; overflow-y:auto; }
+  /* 名刺の「お」ロゴをWEBにも入れる（ブランドの一貫性のため）。メニューを開いた画面の背景に、控えめな透かしとして配置 */
+  .nav-mark{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:0; font-family:"Shippori Mincho",serif; font-weight:700; font-size:min(55vw,480px); line-height:1; color:var(--gold); opacity:.09; pointer-events:none; user-select:none; }
+  .nav-col{ display:flex; flex-direction:column; align-items:center; gap:16px; color:var(--paper); text-decoration:none; opacity:.8; transition:opacity .3s ease, transform .3s ease; }
+  .nav-col:hover{ opacity:1; transform:translateY(-6px); }
+  .nav-num{ font-family:"Shippori Mincho",serif; font-size:13px; color:rgba(245,242,234,.4); letter-spacing:.1em; }
+  .nav-kanji{ writing-mode:vertical-rl; font-family:"Shippori Mincho",serif; font-size:clamp(22px,2.6vw,32px); font-weight:600; letter-spacing:.1em; line-height:1.35; }
+  .nav-col-en{ writing-mode:vertical-rl; font-family:"Zen Kaku Gothic New",sans-serif; font-size:9px; letter-spacing:.3em; color:var(--gold); }
+  .nav-top, .nav-contact{ position:absolute; bottom:30px; font-size:11px; letter-spacing:.15em; color:rgba(245,242,234,.55); text-decoration:none; transition:color .25s ease; z-index:1; }
+  .nav-top{ left:26px; } .nav-contact{ right:26px; color:var(--gold2); }
+  .nav-top:hover, .nav-contact:hover{ color:var(--gold2); }
+  .nav-brand{ position:absolute; bottom:30px; left:50%; transform:translateX(-50%); font-family:"Shippori Mincho",serif; font-size:11px; letter-spacing:.25em; color:rgba(245,242,234,.4); z-index:1; }
+  @media(max-width:700px){ .nav-cols{ gap:6vw 5vw; } .nav-kanji{ font-size:19px; } }
+  .nav-close{ position:absolute; top:26px; right:26px; z-index:2; width:52px; height:52px; border-radius:50%; border:1px solid rgba(227,176,75,.55); background:transparent; color:var(--gold2); font-size:16px; cursor:pointer; }
+</style>
+</head>
+<body>
+
+<button class="nav-toggle" id="navToggle" aria-label="メニューを開く"><span></span><span></span></button>
+<nav class="nav-panel" id="navPanel">
+  <div class="nav-mark" aria-hidden="true">お</div>
+  <button class="nav-close" id="navClose" aria-label="閉じる">✕</button>
+  <div class="nav-cols">
+    <a class="nav-col" href="2026-09-13-ohashi-company-profile.html">
+      <span class="nav-num">一</span>
+      <span class="nav-kanji">会社概要</span>
+      <span class="nav-col-en">COMPANY</span>
+    </a>
+    <a class="nav-col" href="2026-09-13-ohashi-detail-01-kaigai-shinshutsu.html">
+      <span class="nav-num">二</span>
+      <span class="nav-kanji">海外進出支援</span>
+      <span class="nav-col-en">SUPPORT</span>
+    </a>
+    <a class="nav-col" href="2026-09-13-ohashi-detail-02-ekkyo-ec.html">
+      <span class="nav-num">三</span>
+      <span class="nav-kanji">越境EC</span>
+      <span class="nav-col-en">COMMERCE</span>
+    </a>
+    <a class="nav-col" href="2026-09-13-ohashi-detail-03-matsuri-fes.html">
+      <span class="nav-num">四</span>
+      <span class="nav-kanji">祭り・フェス</span>
+      <span class="nav-col-en">FESTIVAL</span>
+    </a>
+    <a class="nav-col" href="2026-09-13-ohashi-detail-04-kodomo-bunka.html">
+      <span class="nav-num">五</span>
+      <span class="nav-kanji">こども文化</span>
+      <span class="nav-col-en">CULTURE</span>
+    </a>
+  </div>
+  <a class="nav-top" href="index.html">← TOP</a>
+  <div class="nav-brand">O-HA-SHI合同会社</div>
+  <a class="nav-contact" href="index.html#sec03">CONTACT →</a>
+</nav>
+
+<header class="hero">
+  <div class="world-map-bg" aria-hidden="true"></div>
+  <canvas id="canvas3d"></canvas>
+  <div class="hero-eyebrow">O — H A — S H I</div>
+  <div class="hero-tagline">国と国、文化と文化を、橋渡しする会社。</div>
+  <div class="hero-type">
+    <span class="hero-line"><span>はしから、</span></span>
+    <span class="hero-line"><span>はしまで、</span></span>
+    <span class="hero-line"><span>はしで、</span></span>
+    <span class="hero-line"><span>はしをかける。</span></span>
+  </div>
+  <div class="scroll-cue">SCROLL ↓</div>
+</header>
+<div class="cursor-tag" id="cursorTag">SCROLL</div>
+
+<section class="bridges" id="sec01">
+  <div class="num-bg" data-parallax>01</div>
+  <div class="section-content">
+    <div class="eyebrow">( ORIGIN )</div>
+    <div class="meanings">
+      <div class="meaning-item" style="--i:0"><span class="meaning-kanji">箸</span><span class="meaning-text">食を、支えるもの</span></div>
+      <div class="meaning-item" style="--i:1"><span class="meaning-kanji">橋</span><span class="meaning-text">場所と場所を、つなぐもの</span></div>
+      <div class="meaning-item" style="--i:2"><span class="meaning-kanji">端</span><span class="meaning-text">何かの、境目</span></div>
+    </div>
+  </div>
+  <div class="origin-big" id="originCard">
+    <div class="origin-panel is-active" data-i="0">
+     <div class="origin-panel-inner">
+      <p class="origin-panel-text"><span class="line">O-HA-SHI合同会社は、</span><span class="line">国と国、文化と文化を、</span><span class="line">橋渡しする会社です。</span></p>
+      <div class="origin-tags"><span>海外進出支援</span><span>越境EC</span></div>
+     </div>
+    </div>
+    <div class="origin-panel" data-i="1">
+     <div class="origin-panel-inner">
+      <p class="origin-panel-text"><span class="line">海外進出支援・越境EC・</span><span class="line">祭り／フェス企画運営・</span><span class="line">こども文化体験。</span></p>
+      <div class="origin-tags"><span>祭り・フェス企画運営</span><span>こども文化体験</span></div>
+     </div>
+    </div>
+  </div>
+</section>
+
+<section id="sec02">
+  <div class="num-bg" data-parallax>02</div>
+  <div class="section-content">
+    <div class="eyebrow">( WHAT WE DO )</div>
+    <p class="lead" style="margin-top:0; margin-bottom:34px;">その物語を、かたちに。</p>
+    <p class="big-line kinetic">
+      <span class="kline"><span style="--i:0">四つの<em class="no-hl">物語。</em></span></span>
+    </p>
+  </div>
+      <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+        <defs>
+          <linearGradient id="goldChrome" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#7a5a22"/>
+            <stop offset="22%" stop-color="#e3b04b"/>
+            <stop offset="42%" stop-color="#fff2c9"/>
+            <stop offset="58%" stop-color="#c98f2e"/>
+            <stop offset="80%" stop-color="#ffd98a"/>
+            <stop offset="100%" stop-color="#7a5a22"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <div class="story-scatter" id="storyStack">
+        <a class="story-card" data-i="0" href="2026-09-13-ohashi-detail-01-kaigai-shinshutsu.html">
+          <div class="story-card-bg"></div>
+          <div class="story-card-title">海外進出支援</div>
+          <div class="story-card-icon">
+           <div class="icon-badge">
+            <svg viewBox="0 0 494.7 265.7"><g fill="url(#goldChrome)">
+              <path d="m275.9 201.8-1.4 1.46h-2.36v-2.15l1.83-1.18h1.93v1.87zm4.05-6.3v2.12l-1.8-1.08v-1.65h1.8v-5.97h-4.6l-10.94 7.33-2.69-3.09v6.07h-6.65l3.86 10.57h12.67l9.75-11.28 0.44-3.05-1.84 0.03zm-171.6-119.4 2.52-1.719h3.04l-2.51 1.719h-3.05zm22.97-9.127-3.22 2.792h-7.46l-2.31 1.582h1.78l-2.48 1.692h-1.77l2.47-1.692h-4.87l-2.11 1.64-2.15 0.215 0.43-3.705h-1.66l-1.94 1.289-3.6 5.315h-2.12l4.08-6.604 4.81-1.029-0.27-0.903-3.17-0.108-1.5-0.913-1.88 0.913h-2.2l0.9-1.945-4.551-2.082h-38.81l-12.78 13.48v10.36l4.666 4.667 16.32 2.098 2.177 3.302 4.59-0.161 3.788 7.44 7.058-8.861 16.78 0.053 1.11 8.388 2.66 0.07 0.07-10.44 27.16-23.22 1.85-0.32 1.05-3.307h-2.9zm16.06-1.435h9.48l-1.97-3.138-1.78-0.425v-2.251zm-70.28 50.76-3.657-7.88 3.036-3.81-3.787-7.442-4.59 0.161-2.177-3.301-16.32-2.098 0.031 0.032 0.695 7.348 5.02 9.5 2.057-1.59-3.959-8.441v-4.751h2.335l0.091 4.419 7.5 17.62 12.23 5.1 3.052-0.81 2.686 2.74 1.338-2.38h2.818l-0.402-3.09h2.415l3.141-2.34 0.133-3.41-3.435-0.06-2.731 4.48zm135.4-76.39 4.54-2.209v-0.622l-2.25-2.282-3.15 1.046-3.78-0.08-0.8 1.09-2.15-0.05v2.02zm40.41 47.95 0.01-2.144-2.43-0.064-0.02 1.58zm-92.08-68.56v2.26l11.28 0.161 2.89 4.987v4.51l-5.41 3.073 0.16 6.12 3.4 3.437h4.02l6.14-6.489 8.67-2.557 3.25-2.489 6.56-0.405 4.59-1.355 8.65-13.75 5.33-1.09 1.88-1.89-15.37-1.546-13.28 1.546h-16.08l-9.27 3.221zm261.6 87.05-1.31-1.37-2.15 3.06 2.15 2.01zm-20.64-37.93 0.43-2.416-4.51-0.725-1.72-2.819h-8.59l-17.56-4.348-1.93 4.348-7.14-2.174-5.33 4.06 17.36 10.14 20.08 0.215 2.42-4.924zm3.81 45.98-2.58 0.57v1.52l1.05 1.27 1.53-1.91zm-9.61-51.94 1.72 2.819 4.51 0.725-0.43 2.416-6.48 1.357-2.43 4.924-20.08-0.215-17.36-10.14-7.51 5.725 1.25 5.811-7.52 2.793 2.15 5.26 8 3.65 0.32 6.443 20.94 7.242 3.86-3.538 8.22 3.538-1.13 3.06 4.35 7.25 7.62-3.86 4.98 4.26 2.11-1.2 0.08 2.05 12.48-4.46 4.08-9.132-7.28-11.98 3.74-4.079h-4.3l-1.38 0.893-2.7-4.435 3.44-3.007 2.36 4.504 3.31-2.277 6.35-4.374v-8.483l-10.52-2.684-7.73-7.571h-7.51l1.71 6.067zm43.39 12.76 2.94-0.04 1.25-2.134-6.53-2.738 0.13 5.395 1.29 0.765zm-8.12 12.47-0.48 1.659 6.47-0.955 0.5 2.498 1.47-0.624 0.16-1.966 4.34-1.115-0.23-5.673-1.97-3.439-1.96-0.568 1.12 5.154-4.01 3.637zm-1.14 3.202 2.34-0.295 0.76 1.128-0.84 2.657zm6.24-1.1-1.13 2.053-1.49-1.691zm-7.08 35.04-3.55-0.37-1.29-1.61 1.29-2.96-1.28-2.84-2.34-0.05-0.57 5 3.31 3.99 3.88 0.49zm-11.18 8.87 1.57 0.31 2.79-2.32-0.06-1.9zm12.25 3.59v2.23l2.33-0.7-0.79-1.44 1.88-0.48-1.6-4.99-1.18 3.08h-3.86zm-6.87-11.13 1.66 1.63-0.54 1-1.34-1.31zm1.66 3.99 1.18 0.8 1.29-1.95-1.72-0.21zm4.4-2.04 1.62 2.09h1.77l-1.69-2.72zm0 1.76 0.91 1.59-0.73 0.97-1.28-1.93zm-1.93 1.61 0.83 1.25-0.83 1-0.95-1.16zm3.15 32.76 1.09 1.5 3.06-0.37v-1.13zm-24.59-17.64 0.15 4.32 2.46 4.3h7.82l3.87-4.94v-8.96l-2.79 0.29-2.26 4.27-7.57 1.69-1.63-0.99zm-5.56 11.28v-3.3l-12.89-13.37-4.41-1.69 14.93 20.33zm15.06 5.88 0.24 1.12-16.11-2.73 2.42-1.94 4.02 1.53 3.63-0.8zm10.3 0h-2.49l0.48 1.61h2.38l1-0.81zm-4.35 2.61 0.73 0.89h1.73l-0.6-1.29zm9.14-2.13-2.49 2.78 1.89 0.24 1.69-1.52zm-8.29-4.91 1.85-0.57-0.56-3.26 1.09-1.21 0.92 2.42 2.22 0.77v-1.74l-1.25-2.76 2.37-1.99-3.78 0.16-0.78-1.08 1.5-1.65 2.78 0.96 1.37-0.12 2.05-2.42-1.8-0.04-1.17 0.77-3.87-0.94-2.56 2.31 0.18 3.66-1.49 1.98zm13.89-5.19-0.43 1.51 4.19-0.43v-1.08zm0.97-9.75-1.4 1.38-0.53 3.44 1.93 0.47-0.43-3.05 1.12-1.4zm9.49 9.15-0.56-2.98-4.59 0.65zm-0.31 2.48 6.4 2.67 1.15 3.27-2.13 1.3 5.48 1.9v-10.79l-4.45-2.32-4.15 3.37-4.39-1.73-0.49 2.42zm-19.06-71.18-4.32-3.535-1.91 1.764 2.58 5.584 3.12-0.215zm-4.32-3.535-1.91-1.564 2.47-0.322-0.43-4.939-6.35 4.374 1.86 3.53 2.45 0.685zm-5.53 56.98-3.44 4.63-7.94 3.67 1.63 0.99 7.57-1.69 2.26-4.27 2.79-0.29v-3.28zm-26.32 0 1.38 4.48 5.68 4.84 0.44-1.72-5.36-7.92zm68.12 27.58 3.81-3.5 4.94 4.82 4.51 0.92-5.58-5.58 0.27-2.95-9.94-5.2v10.79zm10.46-5.78 2.01 1.2 3.47-1.95v-2.02zm2.8-5.67 4.05 2.9 1.62-0.55-4.11-2.45zm-84.29-42.84-4.35-7.25 1.12-3.06-2.52-1.08-3.38 2.43-1.59 10.99 2.51 2.1 0.96 5.02 1.77 0.53 1.27-1.59 2.36 2.66 1.31 4.86-0.31 5.02 2.03-3.98-3.65-13.16 2.47-1.79zm7.3 6.18 2.92 3.97-2.73 2.74h6.12v-1.56l-5.96-6.34-1.32-4.08-4.14-2.02-2.19 1.11v1.7l2.14 1.25v3.23zm-5.16 0v-3.23l-2.14-1.25-2.47 1.79 3.65 13.16-2.03 3.98-0.12 1.98 3.54 3 0.34 1.1 2.14-0.32-3.44-5.07 0.8-7.84 3.87 3.83v-3.21l3.94-3.95-2.92-3.97zm4.14 7.92v3.21l1.93 1.92 2.17-0.3 3.23-2.42v-3.62h-6.12zm1.37-9.11 5.96 6.34v5.18l-3.23 2.42 0.08 3.46 6.18-4.08-0.21-6.07-6.45-6.81 0.32-3.73 2.3-1.3-4.98-4.26-5.43 2.75 4.14 2.02zm-25.77-13.2-1.37 0.64 1.94 6.13 1.25-1.21 5.58 4.68 0.36-2.5-2.93-2.74-0.48-3.28-2.34 0.96zm2.01-0.42-3.38-0.84 0.47-2.12-0.97-0.336-2.07 3.296-11.37-4.306 0.03-3.632-2.84-0.984-0.32-6.443-2.48-1.13h-2.29l-3.4 2.416-0.09 2.057 2.06 1.167 0.98 4.021-4.47 4.114h-2.86v3.04l2.14 0.81v2.62l-3.86 1.03 0.33 0.39 3.19 1.01-1.49 1.53 1.41 1.83 2.53 0.3 0.45-2.1 1 0.01 8.13 23.38 5.16-3.17 0.8-9.4 11.77-11.37-1.94-6.13 1.37-0.64 2.01 2.68 2.34-0.96 0.48 3.28 2.93 2.74 1.23-8.49 3.38-2.43-5.69-2.458-3.86 3.538zm-17.29-7.938-0.03 3.632 11.37 4.306 2.07-3.296zm14.38 4.978-0.47 2.12 3.38 0.84 0.81-1.68zm-64.41-27.17 2.41 2.002 3.07-0.848 2.72 2.27-0.47-5.894 4.19-0.966 5.52 3.785 4.62-0.886 3.38 4.456 3.26-0.144 3.19-2.621 7.53-0.327 4.82 2.233-1.25-5.811 7.51-5.723-4.33-2.532-25.24-8.901-9.95 2.243v4.498h-17.64v5.812l2.36 2.952 5.05-2.04 3.01 2.04-3.65 1.771zm19.32 13.88-1.69-2.737-6.6-2.094-3.9 1.3-0.07 1.737-4.97-0.003-2.74-4.835-6.55 0.647v1.933l7.95 13.49 2.36 0.226 5.48 5.717 10.09 3.01h2.8l2.03-3.49-2.25-2.821-3.22-9.341zm-11.12-10.45-2.72-2.27-3.07 0.848 4.9 4.058-0.18 4.286 3.9-1.3 6.61 2.094 1.69 2.737 6.28-3.221-10.35-8.283h-4.39zm26.12 23.98h2.86l4.47-4.114-0.98-4.021-2.06-1.167 0.09-2.057 3.4-2.416h2.29l-4.77-2.179-5.08 0.733-1.61 6.978-5.87 5.427-6.3-0.063 0.5 1.428 2.25 2.821-2.03 3.49h8.8l2.32 2.64 3.86-1.03v-2.62l-2.14-0.81zm-16.88-27.06-5.52-3.785-4.19 0.966 0.47 5.894 2.67-1.051h4.39l10.35 8.283 3.39 0.907-1.54-4.53 4.81-1.38 0.27-2.048-7.1 0.314-3.38-4.456zm1.88 13.53-1.28 2.739 2.72 7.913 6.3 0.063 5.87-5.427 1.61-6.978-1.04-2.94-4.5 2.316-3.39-0.907zm13.75-5.985-4.04-1.311-1.57 0.452 1.54 4.53 4.5-2.316 1.04 2.94 5.08-0.733-0.75-0.341-1.48-3.631zm-1.18-6.738-3.19 2.621 3.84-0.17-0.27 2.048-3.24 0.928 4.04 1.311 4.32-0.41-0.67-1.629 7.52-2.793-4.82-2.233zm-38.55 3.772 2.88 2.628 3.13-0.309-2.18-3.841-2.36-0.584zm-6.19-1.087 4.27 1.087h1.92l1.47-2.106-5.45-2.471-2.21 0.478zm5.65 4.053 3.42-0.338-2.88-2.628h-1.92zm-32.55-32.75-1.13 0.267 0.29 0.217-0.32 1.45-3.17-1.45 0.01 1.882 4.32 1.102 3.11 1.423 1.2-1.026-0.43-3.056-1.58 0.48zm-4.31 4.517 2.41 0.803 0.66 1.364 0.52 1.455 3.83-3.248-3.11-1.423-4.32-1.102zm12.24-0.652h-3.62l-5.03 4.274 0.8 2.205 7.21 1.15 4.5-0.982-2.68-1.09 1.61-1.027zm-10.04-5.588-0.38 0.966 1.36 1.024 1.13-0.267 2.3 1.289 1.58-0.48-0.49-3.481-0.9 0.845zm9.4 13.22-7.21-1.15 0.45 1.252-2.58 3.217v1.82h9.75l0.94 1.782-1.69 2.649 1.48 0.619 0.4-1.228h5.78l-1.28 1.328 1.78 1.007 2.4-0.188-2.28-2.912 6-1.275 1.53-3.436-10.97-4.467zm-13.73-28.16-10.1 7.408v6.589l-1.39 2.177 3.8 4.375 6.2-5.49-2.9-3.6 6.53-7.137h1.29l-1.78-4.322zm-17.81 16.67 5.91-0.966 0.41 0.471 1.39-2.177v-6.589l10.11-7.408h5.59v-1.845l-5.73 0.292-19.65 13.6zm23.41-16.67h-3.94l1.77 4.322h1.04l-3.14 7.113 3.67 1.852h5.59l3.14-3.624-5.21-11.66-2.92 0.148zm169.4 32.4h1.93l-6.81-6.979-1.93-0.055 5.47 6.765 2.68 4.993h1.99zm-170.5-10.41-2.41-0.803 0.01 1.603 3.06 0.564zm144.1-24.13-1.85-2.513-11.44-1.87-3.22 2.899h-9.26l-3.86-2.899h-20.94l-1.29-4.616h-19.33l-17.04 7.622 3.73 4.618-3.22 3.328-2.91-9.511-5.14-0.407 2.47 5.623-19.87 0.537-18.57 7.623-2.45-4.668 7.06 0.266 3.44-1.718-13.53-4.314-2.88 0.147 5.21 11.66-3.14 3.624-0.76 0.71 0.49 3.481 0.43 3.056h3.62l2.79 4.53-1.61 1.027 2.68 1.09 10.97 4.467-1.53 3.436 0.72 1.717-1.77 0.483 0.31 2.824 6.41 2.245 2.21-0.478 5.45 2.471 2.36 0.584-1.47-2.577v-5.229l-2.36-2.952v-5.812h17.64v-4.498l9.95-2.243 25.24 8.901 4.33 2.53 5.33-4.06 7.14 2.174 1.93-4.348 17.56 4.348h8.59l3.22-0.644-1.72-6.067h7.52l7.73 7.571 10.52 2.684v8.483l4.61-0.81 2.48-3.7v-6.872l-7.09-8.053-6.87-0.107 1.18-8.482 14.17 0.107 1.54-4.814 5.98 2.263 0.02-2.219 1.48 0.153 2.58 2.469-2.49 1.695-0.3 5.069 10.09 9.557v-9.234l-5.69-5.477 13.48-4.268 0.17-1.376-6.78-1.845 2.64-2.057 6.06 1.252 4.11 0.081-3.3-3.541-21.16-4.191z"/>
+              <path d="m481.4 220-1 3.2 7.3-5.2-2.1-2.8v-3.2l-1.2 0.5v4.5zm-19.2 10.5 15.2-7.7v2l-11.7 7.7zm-62.3-39.5 12.8-6 9.5-10.5 5.2 2.3 2.3-4.8 8.7-0.2-2.2 4 7.2 6.2 4.8-4.8v-6.7l2.2 0.7 2.5 12 7.8 11-0.8 8.3-14.2 14.7-12.3-0.7-1.5-8.3-4.2 1.8-4-3.5-24.3 5.3-1.5-1.8 2-4.8z"/>
+            </g></svg>
+           </div>
+          </div>
+          <div class="story-card-desc">誰かの、物語のはじまりに。</div>
+          <div class="story-card-num">01</div>
+        </a>
+        <a class="story-card" data-i="1" href="2026-09-13-ohashi-detail-02-ekkyo-ec.html">
+          <div class="story-card-bg"></div>
+          <div class="story-card-title">越境EC</div>
+          <div class="story-card-icon">
+           <div class="icon-badge">
+            <svg viewBox="0 0 200 200">
+              <path d="M40 65 Q100 25 160 65" fill="none" stroke="url(#goldChrome)" stroke-width="4" stroke-dasharray="7 7" stroke-linecap="round"/>
+              <g fill="none" stroke="url(#goldChrome)" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">
+                <path d="M62 95 100 78 138 95 138 145 100 162 62 145Z"/>
+                <path d="M62 95 100 112 138 95"/>
+                <path d="M100 112 100 162"/>
+              </g>
+            </svg>
+           </div>
+          </div>
+          <div class="story-card-desc">物語を、届け続ける仕組み。</div>
+          <div class="story-card-num">02</div>
+        </a>
+        <a class="story-card" data-i="2" href="2026-09-13-ohashi-detail-03-matsuri-fes.html">
+          <div class="story-card-bg"></div>
+          <div class="story-card-title">祭り・フェス企画運営</div>
+          <div class="story-card-icon">
+           <div class="icon-badge">
+            <svg viewBox="0 0 200 200">
+              <g fill="url(#goldChrome)">
+                <path d="M42 58 Q100 34 158 58" fill="none" stroke="url(#goldChrome)" stroke-width="8" stroke-linecap="round"/>
+                <rect x="64" y="84" width="72" height="8" rx="4"/>
+                <rect x="64" y="58" width="8" height="112" rx="4"/>
+                <rect x="128" y="58" width="8" height="112" rx="4"/>
+              </g>
+            </svg>
+           </div>
+          </div>
+          <div class="story-card-desc">人が集まる場所に、物語が生まれる。</div>
+          <div class="story-card-num">03</div>
+        </a>
+        <a class="story-card" data-i="3" href="2026-09-13-ohashi-detail-04-kodomo-bunka.html">
+          <div class="story-card-bg"></div>
+          <div class="story-card-title">こども文化体験</div>
+          <div class="story-card-icon">
+           <div class="icon-badge">
+            <svg viewBox="0 0 200 200">
+              <g fill="url(#goldChrome)" stroke="url(#goldChrome)" stroke-width="1" stroke-linejoin="round">
+                <polygon points="95,90 125,130 90,165 60,128"/>
+                <polygon points="95,90 25,70 60,128"/>
+                <polygon points="90,165 35,190 68,168"/>
+                <polygon points="95,90 105,82 145,35 133,45"/>
+                <polygon points="145,35 170,18 150,48"/>
+              </g>
+            </svg>
+           </div>
+          </div>
+          <div class="story-card-desc">物語を、次の世代へ。</div>
+          <div class="story-card-num">04</div>
+        </a>
+      </div>
+</section>
+
+<section class="cta" id="sec03">
+  <div class="num-bg" data-parallax>03</div>
+  <canvas id="canvas3d-cta"></canvas>
+  <div class="section-content">
+    <div class="eyebrow">( NEXT )</div>
+    <p class="big-line kinetic" style="margin:0 auto;">
+      <span class="kline"><span style="--i:0">BUILD YOUR</span></span><br>
+      <span class="kline"><span style="--i:1">OWN <em class="no-hl">STORY.</em></span></span>
+    </p>
+    <div class="magnetic-wrap">
+      <div class="magnetic-ring"></div>
+      <a href="#" class="magnetic-btn" id="magBtn">CONTACT</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  O-HA-SHI合同会社　法人番号 2010003052416<br>
+  東京都千代田区神田須田町一丁目7番8号 Vort秋葉原IV 2階
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+  const canvas = document.getElementById('canvas3d');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 100);
+  camera.position.set(0, 0, 9);
+
+  function resize(){
+    const w = window.innerWidth, h = window.innerHeight;
+    renderer.setSize(w, h);
+    const aspect = w/h;
+    camera.aspect = aspect;
+    // 縦長の画面では、カメラを引くだけだとお箸が小さくなりすぎて全体のバランスが悪くなるため、
+    // 画角(fov)も同時に広げることで、はみ出さない範囲でお箸をできるだけ大きく保つ
+    const fov = aspect >= 1 ? 45 : 45 + (1 - aspect) * 35;
+    camera.fov = fov;
+    const halfTan = Math.tan(THREE.MathUtils.degToRad(fov / 2));
+    camera.position.z = Math.max(9, 4.2 / (halfTan * aspect));
+    camera.updateProjectionMatrix();
+  }
+  resize();
+  window.addEventListener('resize', resize);
+  window.addEventListener('load', resize);
+
+  // soft radial glow backdrop (cheap stand-in for an environment map)
+  function makeGlowTexture(hex, size){
+    const c = document.createElement('canvas'); c.width = c.height = size;
+    const ctx = c.getContext('2d');
+    const g = ctx.createRadialGradient(size/2,size/2,0,size/2,size/2,size/2);
+    g.addColorStop(0, hex + 'ff'); g.addColorStop(.4, hex + '55'); g.addColorStop(1, hex + '00');
+    ctx.fillStyle = g; ctx.fillRect(0,0,size,size);
+    return new THREE.CanvasTexture(c);
+  }
+  const glowTex = makeGlowTexture('#e3b04b', 512);
+  const glowSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map:glowTex, transparent:true, opacity:.5, blending:THREE.AdditiveBlending }));
+  glowSprite.scale.set(9,9,1);
+  glowSprite.position.set(0,0,-2);
+  scene.add(glowSprite);
+
+  // floating gold dust particles (atmosphere)
+  const dustTex = makeGlowTexture('#ffe3a8', 64);
+  const dustCount = 140;
+  const dustGeo = new THREE.BufferGeometry();
+  const dustPos = new Float32Array(dustCount*3);
+  const dustSpeed = new Float32Array(dustCount);
+  for(let i=0;i<dustCount;i++){
+    dustPos[i*3] = (Math.random()-0.5)*14;
+    dustPos[i*3+1] = (Math.random()-0.5)*8;
+    dustPos[i*3+2] = (Math.random()-0.5)*6;
+    dustSpeed[i] = 0.15 + Math.random()*0.35;
+  }
+  dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
+  const dustMat = new THREE.PointsMaterial({ size:0.09, map:dustTex, transparent:true, opacity:.55, depthWrite:false, blending:THREE.AdditiveBlending });
+  const dust = new THREE.Points(dustGeo, dustMat);
+  scene.add(dust);
+
+  const group = new THREE.Group();
+  scene.add(group);
+
+  const matA = new THREE.MeshPhysicalMaterial({ color:0xe3b04b, metalness:0.9, roughness:0.22, clearcoat:1, clearcoatRoughness:0.15 });
+  const matB = new THREE.MeshPhysicalMaterial({ color:0xd9a344, metalness:0.88, roughness:0.3, clearcoat:0.8, clearcoatRoughness:0.2 });
+  const stickGeo = new THREE.CylinderGeometry(0.09, 0.13, 6.2, 32);
+  const tipGeo = new THREE.CylinderGeometry(0.05, 0.09, 0.9, 32);
+  const tipMat = new THREE.MeshPhysicalMaterial({ color:0x1a140a, metalness:0.4, roughness:0.35, clearcoat:0.6 });
+
+  function makeStick(mat){
+    const g = new THREE.Group();
+    const body = new THREE.Mesh(stickGeo, mat);
+    g.add(body);
+    const tip = new THREE.Mesh(tipGeo, tipMat);
+    tip.position.set(0, 3.1, 0);
+    g.add(tip);
+    return g;
+  }
+
+  const stick1 = makeStick(matA);
+  stick1.rotation.z = Math.PI/2;
+  stick1.position.set(0, 0.32, 0);
+  group.add(stick1);
+
+  const stick2 = makeStick(matB);
+  stick2.rotation.z = Math.PI/2;
+  stick2.position.set(0, -0.32, 0);
+  group.add(stick2);
+
+  group.rotation.x = 0.18;
+  group.rotation.y = -0.3;
+
+  const key = new THREE.PointLight(0xffe3a8, 3.4, 30);
+  key.position.set(4, 3, 6);
+  scene.add(key);
+  const rim = new THREE.PointLight(0x88aaff, 1.6, 30);
+  rim.position.set(-5, -2, -4);
+  scene.add(rim);
+  const fill = new THREE.PointLight(0xffb877, 1.2, 30);
+  fill.position.set(-2, -3, 4);
+  scene.add(fill);
+  scene.add(new THREE.AmbientLight(0x404040, 1.1));
+
+  let mouseX = 0, mouseY = 0;
+  window.addEventListener('mousemove', (e)=>{
+    mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+    mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+  });
+
+  let visible = true;
+  const heroEl = document.querySelector('header.hero');
+  function checkHeroVisible(){
+    const r = heroEl.getBoundingClientRect();
+    visible = r.bottom > 0 && r.top < window.innerHeight;
+  }
+  window.addEventListener('scroll', checkHeroVisible, {passive:true});
+  window.addEventListener('resize', checkHeroVisible);
+  checkHeroVisible();
+
+  let scrollProgress = 0;
+  window.addEventListener('scroll', ()=>{
+    scrollProgress = Math.min(1, window.scrollY / (window.innerHeight * 0.8));
+  }, {passive:true});
+
+  const clock = new THREE.Clock();
+  const REVERSAL_CYCLE_SEC = 18; // motion-onsetで注意を引き戻す周期（科学的根拠：motion onsetが注意を再度捉える）
+  function animate(){
+    requestAnimationFrame(animate);
+    const t = clock.getElapsedTime();
+    if(visible){
+      const speed = 0.0005 + mouseX*0.0003;
+      const spinDir = Math.floor(t / REVERSAL_CYCLE_SEC) % 2 === 0 ? 1 : -1;
+      const step = speed * spinDir;
+      stick1.rotation.y += step;
+      stick2.rotation.y -= step;
+      group.rotation.x = 0.18 + mouseY*0.12;
+      stick1.position.y = 0.32 + scrollProgress*0.9;
+      stick2.position.y = -0.32 - scrollProgress*0.9;
+      group.position.z = scrollProgress * -2;
+      glowSprite.material.opacity = 0.5 * (1 - scrollProgress*0.6);
+      const pos = dustGeo.attributes.position;
+      for(let i=0;i<dustCount;i++){
+        pos.array[i*3+1] += 0.0022 * dustSpeed[i];
+        if(pos.array[i*3+1] > 4) pos.array[i*3+1] = -4;
+      }
+      pos.needsUpdate = true;
+      renderer.render(scene, camera);
+    }
+  }
+  animate();
+
+  // magnetic button
+  const btn = document.getElementById('magBtn');
+  btn.addEventListener('mousemove', (e)=>{
+    const r = btn.getBoundingClientRect();
+    const x = (e.clientX - r.left - r.width/2) * 0.3;
+    const y = (e.clientY - r.top - r.height/2) * 0.3;
+    btn.style.transform = `translate(${x}px, ${y}px)`;
+  });
+  btn.addEventListener('mouseleave', ()=>{ btn.style.transform = 'translate(0,0)'; });
+
+  // 1文字ずつ独立したspanに分割（賞受賞サイトの「文字単位アニメーション」技術を参照）
+  function splitChars(container){
+    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
+    const textNodes = [];
+    let n;
+    while(n = walker.nextNode()) textNodes.push(n);
+    let ci = 0;
+    textNodes.forEach(textNode=>{
+      const frag = document.createDocumentFragment();
+      Array.from(textNode.textContent).forEach(ch=>{
+        const span = document.createElement('span');
+        span.className = 'char';
+        span.style.setProperty('--ci', ci++);
+        span.textContent = (ch === ' ') ? ' ' : ch;
+        frag.appendChild(span);
+      });
+      textNode.parentNode.replaceChild(frag, textNode);
+    });
+  }
+  document.querySelectorAll('.hero-line > span, .kinetic .kline > span').forEach(splitChars);
+
+  // scroll reveal: section-content / kinetic / eyebrow（スクロール位置を直接判定する方式。IntersectionObserverより互換性が高い）
+  const revealEls = Array.from(document.querySelectorAll('.section-content, footer'));
+  function checkReveal(){
+    const vh = window.innerHeight;
+    revealEls.forEach(el=>{
+      if(el.classList.contains('is-in')) return;
+      const r = el.getBoundingClientRect();
+      if(r.top < vh * 0.8 && r.bottom > 0){
+        el.classList.add('is-in');
+        el.querySelectorAll('.kinetic, .eyebrow').forEach(k=>k.classList.add('is-in'));
+      }
+    });
+  }
+  window.addEventListener('scroll', checkReveal, {passive:true});
+  window.addEventListener('resize', checkReveal);
+  // 初回判定はフォント読み込み完了後に行う（読み込み直後は文字サイズが仮のもので、画面外の要素を誤って「表示済み」と判定してしまうため）
+  if(document.fonts && document.fonts.ready){ document.fonts.ready.then(checkReveal); }
+  window.addEventListener('load', checkReveal);
+  setTimeout(checkReveal, 800);
+
+  // parallax on giant background numbers
+  const parallaxEls = Array.from(document.querySelectorAll('[data-parallax]'));
+  window.addEventListener('scroll', ()=>{
+    parallaxEls.forEach(el=>{
+      const r = el.parentElement.getBoundingClientRect();
+      const progress = (window.innerHeight - r.top) / (window.innerHeight + r.height);
+      // 下に沈んでいくのではなく、下から上へ立ち上がってくるように（Kaneko Opticalの縦の動きを参考）
+      el.style.transform = `translateY(${(0.5-progress) * 140}px)`;
+    });
+  }, {passive:true});
+
+  // 四つの物語：スクロールで4枚のカードがそれぞれの位置にふわっと収まっていく（num-bgと同じ考え方）
+  (function(){
+    const scatterWrap = document.querySelector('.story-scatter');
+    const scatterCards = Array.from(document.querySelectorAll('.story-scatter .story-card'));
+    if(!scatterWrap || !scatterCards.length) return;
+    function update(){
+      const r = scatterWrap.getBoundingClientRect();
+      const progress = (window.innerHeight - r.top) / (window.innerHeight + r.height);
+      scatterCards.forEach((card,i)=>{
+        const delay = i * 0.08;
+        const en = Math.min(1, Math.max(0, (progress - 0.15 - delay) / 0.35));
+        card.style.setProperty('--en', en);
+      });
+    }
+    update();
+    window.addEventListener('scroll', update, {passive:true});
+    window.addEventListener('resize', update);
+  })();
+
+  // ０１ ORIGIN：1枚のカードの中身だけが、一定時間ごとに横スライドで差し替わる
+  (function(){
+    const card = document.getElementById('originCard');
+    const panels = Array.from(document.querySelectorAll('.origin-panel'));
+    if(!card || panels.length < 2) return;
+    let active = 0;
+    let prevActive = -1;
+    function apply(){
+      panels.forEach(p=>{
+        const i = Number(p.dataset.i);
+        p.classList.remove('is-active','is-leaving');
+        if(i === active) p.classList.add('is-active');
+        else if(i === prevActive) p.classList.add('is-leaving');
+      });
+      prevActive = active;
+      const activePanel = panels.find(p => Number(p.dataset.i) === active);
+      const inner = activePanel.querySelector('.origin-panel-inner');
+      card.style.minHeight = inner.offsetHeight + 'px';
+    }
+    apply();
+    window.addEventListener('resize', apply);
+    function next(){ active = (active + 1) % panels.length; apply(); }
+    let timer = setInterval(next, 5000);
+    card.addEventListener('mouseenter', ()=>{ clearInterval(timer); });
+    card.addEventListener('mouseleave', ()=>{ timer = setInterval(next, 5000); });
+  })();
+
+  // second 3D scene for CTA section (crossed chopsticks)
+  const ctaCanvas = document.getElementById('canvas3d-cta');
+  const ctaRenderer = new THREE.WebGLRenderer({ canvas: ctaCanvas, antialias:true, alpha:true });
+  ctaRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  const ctaScene = new THREE.Scene();
+  const ctaCamera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+  ctaCamera.position.set(0, 0, 9);
+
+  function resizeCta(){
+    const sec = document.getElementById('sec03');
+    const w = sec.clientWidth, h = sec.clientHeight;
+    ctaRenderer.setSize(w, h);
+    const aspect = w/h;
+    ctaCamera.aspect = aspect;
+    // HEROと同じ考え方：画角も広げつつ、はみ出さない範囲でお箸をできるだけ大きく保つ
+    const ctaFov = aspect >= 1 ? 45 : 45 + (1 - aspect) * 35;
+    ctaCamera.fov = ctaFov;
+    const ctaHalfTan = Math.tan(THREE.MathUtils.degToRad(ctaFov / 2));
+    ctaCamera.position.z = Math.max(9, 4.2 / (ctaHalfTan * aspect));
+    ctaCamera.updateProjectionMatrix();
+  }
+  resizeCta();
+  window.addEventListener('resize', resizeCta);
+  window.addEventListener('load', resizeCta);
+
+  const ctaGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map:glowTex, transparent:true, opacity:.4, blending:THREE.AdditiveBlending }));
+  ctaGlow.scale.set(8,8,1);
+  ctaGlow.position.set(0,0,-2);
+  ctaScene.add(ctaGlow);
+
+  const ctaGroup = new THREE.Group();
+  ctaScene.add(ctaGroup);
+  const ctaMatA = new THREE.MeshPhysicalMaterial({ color:0xe3b04b, metalness:0.9, roughness:0.22, clearcoat:1, clearcoatRoughness:0.15 });
+  const ctaMatB = new THREE.MeshPhysicalMaterial({ color:0xd9a344, metalness:0.88, roughness:0.3, clearcoat:0.8, clearcoatRoughness:0.2 });
+  const ctaStick1 = new THREE.Mesh(stickGeo, ctaMatA);
+  ctaStick1.rotation.z = Math.PI/4;
+  ctaGroup.add(ctaStick1);
+  const ctaStick2 = new THREE.Mesh(stickGeo, ctaMatB);
+  ctaStick2.rotation.z = -Math.PI/4;
+  ctaGroup.add(ctaStick2);
+
+  const ctaKey = new THREE.PointLight(0xffe3a8, 3.4, 30);
+  ctaKey.position.set(4, 3, 6);
+  ctaScene.add(ctaKey);
+  const ctaRim = new THREE.PointLight(0x88aaff, 1.3, 30);
+  ctaRim.position.set(-5, -2, -4);
+  ctaScene.add(ctaRim);
+  const ctaFill = new THREE.PointLight(0xffb877, 1.2, 30);
+  ctaFill.position.set(-2, -3, 4);
+  ctaScene.add(ctaFill);
+  ctaScene.add(new THREE.AmbientLight(0x404040, 1.1));
+
+  let ctaVisible = false;
+  const sec03El = document.getElementById('sec03');
+  function checkCtaVisible(){
+    const r = sec03El.getBoundingClientRect();
+    ctaVisible = r.bottom > 0 && r.top < window.innerHeight;
+  }
+  window.addEventListener('scroll', checkCtaVisible, {passive:true});
+  window.addEventListener('resize', checkCtaVisible);
+  checkCtaVisible();
+
+  let ctaScrollProgress = 0;
+  window.addEventListener('scroll', ()=>{
+    const rect = sec03El.getBoundingClientRect();
+    ctaScrollProgress = Math.max(0, Math.min(1, (window.innerHeight - rect.top) / (window.innerHeight * 0.9)));
+  }, {passive:true});
+
+  function animateCta(){
+    requestAnimationFrame(animateCta);
+    if(!ctaVisible) return;
+    const ctaT = clock.getElapsedTime();
+    const ctaSpeed = 0.0005;
+    const ctaSpinDir = Math.floor(ctaT / REVERSAL_CYCLE_SEC) % 2 === 0 ? 1 : -1;
+    const ctaStep = ctaSpeed * ctaSpinDir;
+    ctaStick1.rotation.y += ctaStep;
+    ctaStick2.rotation.y -= ctaStep;
+    ctaGroup.rotation.x += 0.0012;
+    // スクロールで進むほど交差(✕)から寄り添う1膳へ変化＝「物語が形になる」演出
+    const crossAngle = (Math.PI/4) * (1 - ctaScrollProgress * 0.8);
+    ctaStick1.rotation.z = crossAngle;
+    ctaStick2.rotation.z = -crossAngle;
+    ctaStick1.position.y = 0.05 + ctaScrollProgress * 0.22;
+    ctaStick2.position.y = -0.05 - ctaScrollProgress * 0.22;
+    // 画面の下からお箸がせり上がってくる（Jesko Jetsの「飛行機が下からせり上がる」演出を参照）
+    ctaGroup.position.y = -4.2 + ctaScrollProgress * 4.2;
+    const ctaScale = 0.7 + ctaScrollProgress * 0.3;
+    ctaGroup.scale.set(ctaScale, ctaScale, ctaScale);
+    ctaRenderer.render(ctaScene, ctaCamera);
+  }
+  animateCta();
+
+  // cursor-follow "SCROLL" tag over the hero (IVRESSの「TAP TO BEGIN」の技術を参照)
+  const cursorTag = document.getElementById('cursorTag');
+  heroEl.addEventListener('mousemove', (e)=>{
+    cursorTag.style.left = e.clientX + 'px';
+    cursorTag.style.top = e.clientY + 'px';
+    cursorTag.classList.add('is-active');
+  });
+  heroEl.addEventListener('mouseleave', ()=>{ cursorTag.classList.remove('is-active'); });
+
+  // サイト内共通ナビゲーション
+  const navToggle = document.getElementById('navToggle');
+  const navPanel = document.getElementById('navPanel');
+  const navClose = document.getElementById('navClose');
+  navToggle.addEventListener('click', ()=>navPanel.classList.add('is-open'));
+  navClose.addEventListener('click', ()=>navPanel.classList.remove('is-open'));
+</script>
+</body>
+</html>

@@ -1,0 +1,164 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>O-HA-SHI合同会社 | 会社概要</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --gold:#e3b04b; --gold2:#ffd98a; --ink:#050506; --paper:#f5f2ea; }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{ background:var(--ink); color:var(--paper); overflow-x:hidden; }
+  body{ font-family:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN",sans-serif; }
+  a{ color:inherit; text-decoration:none; }
+  .detail-title, .detail-cta p{ font-family:"Shippori Mincho",serif; }
+
+  .back-nav{ position:fixed; top:28px; left:28px; z-index:10; font-size:11px; letter-spacing:.15em; color:rgba(245,242,234,.6); display:flex; align-items:center; gap:8px; transition:color .3s ease; }
+  .back-nav:hover{ color:var(--gold2); }
+  .back-nav svg{ width:14px; height:14px; display:block; }
+
+  header.detail-hero{ position:relative; min-height:56vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:140px 6vw 70px; background:radial-gradient(ellipse at 50% 30%, #14101f 0%, #0a0812 45%, #050506 80%); overflow:hidden; }
+  .eyebrow{ position:relative; z-index:1; font-size:11px; letter-spacing:.4em; color:var(--gold); margin-bottom:26px; }
+  .detail-title{ position:relative; z-index:1; font-size:clamp(32px,6vw,58px); font-weight:600; letter-spacing:.03em; line-height:1.5; max-width:900px; }
+  .detail-title em{ font-style:normal; font-weight:800; font-size:1.08em; color:var(--gold2); }
+  .detail-sub{ position:relative; z-index:1; margin-top:24px; font-size:12.5px; letter-spacing:.08em; color:rgba(245,242,234,.5); }
+
+  section.facts{ padding:100px 6vw 120px; max-width:640px; margin:0 auto; }
+  .fact-row{ display:flex; flex-wrap:wrap; gap:6px 24px; padding:22px 0; border-bottom:1px solid rgba(245,242,234,.12); opacity:0; transform:translateY(14px); transition:opacity .7s ease, transform .7s ease; }
+  .fact-row.is-in{ opacity:1; transform:translateY(0); }
+  .fact-row dt{ width:110px; flex-shrink:0; font-size:11px; letter-spacing:.15em; color:var(--gold); }
+  .fact-row dd{ flex:1; min-width:200px; font-size:14.5px; line-height:1.8; letter-spacing:.02em; color:rgba(245,242,234,.85); }
+
+  section.detail-cta{ text-align:center; padding:100px 6vw 140px; background:linear-gradient(160deg,#0b0d10,#1a1408); }
+  .detail-cta p{ font-size:clamp(22px,3.6vw,36px); margin-bottom:44px; }
+  .detail-cta em{ font-style:normal; color:var(--gold2); }
+  .cta-link{ display:inline-flex; align-items:center; justify-content:center; width:170px; height:170px; border-radius:50%; border:1px solid var(--gold); font-size:12px; letter-spacing:.15em; color:var(--gold2); transition:background .3s ease, transform .2s ease; }
+  .cta-link:hover{ background:rgba(227,176,75,.08); transform:scale(1.05); }
+
+  footer{ text-align:center; padding:50px 20px 70px; font-size:10.5px; color:rgba(245,242,234,.4); line-height:1.9; background:var(--ink); border-top:1px solid rgba(227,176,75,.18); }
+
+  /* サイト内共通ナビゲーション */
+  .nav-toggle{ position:fixed; top:26px; right:26px; z-index:60; width:52px; height:52px; border-radius:50%; border:1px solid rgba(227,176,75,.55); background:rgba(5,5,6,.4); backdrop-filter:blur(2px); cursor:pointer; transition:border-color .3s ease, transform .3s ease; }
+  .nav-toggle span{ position:absolute; top:50%; left:50%; width:2px; height:26px; margin-top:-13px; margin-left:-1px; background:linear-gradient(180deg, var(--gold2), var(--gold)); border-radius:1px; transition:transform .3s ease; }
+  .nav-toggle span:first-child{ transform:translateX(-6px) rotate(22deg); }
+  .nav-toggle span:last-child{ transform:translateX(5px) rotate(22deg); }
+  .nav-toggle:hover{ border-color:var(--gold2); }
+  .nav-toggle:hover span:first-child{ transform:translateX(-7px) rotate(12deg); }
+  .nav-toggle:hover span:last-child{ transform:translateX(6px) rotate(32deg); }
+  /* メニュー全体：金子眼鏡サイトの「縦書きの章立て」画面を参照した構成 */
+  .nav-panel{ position:fixed; inset:0; z-index:70; background:radial-gradient(ellipse at 50% 30%, #14101f 0%, #0a0812 55%, #050506 100%); opacity:0; pointer-events:none; transition:opacity .5s ease; overflow:hidden; }
+  .nav-panel.is-open{ opacity:1; pointer-events:auto; }
+  .nav-cols{ position:absolute; inset:0; z-index:1; display:flex; align-items:center; justify-content:center; gap:5vw; flex-wrap:wrap; padding:100px 6vw 120px; overflow-y:auto; }
+  .nav-mark{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:0; font-family:"Shippori Mincho",serif; font-weight:700; font-size:min(55vw,480px); line-height:1; color:var(--gold); opacity:.09; pointer-events:none; user-select:none; }
+  .nav-col{ display:flex; flex-direction:column; align-items:center; gap:16px; color:var(--paper); text-decoration:none; opacity:.8; transition:opacity .3s ease, transform .3s ease; }
+  .nav-col:hover{ opacity:1; transform:translateY(-6px); }
+  .nav-num{ font-family:"Shippori Mincho",serif; font-size:13px; color:rgba(245,242,234,.4); letter-spacing:.1em; }
+  .nav-kanji{ writing-mode:vertical-rl; font-family:"Shippori Mincho",serif; font-size:clamp(22px,2.6vw,32px); font-weight:600; letter-spacing:.1em; line-height:1.35; }
+  .nav-col-en{ writing-mode:vertical-rl; font-family:"Zen Kaku Gothic New",sans-serif; font-size:9px; letter-spacing:.3em; color:var(--gold); }
+  .nav-top, .nav-contact{ position:absolute; bottom:30px; font-size:11px; letter-spacing:.15em; color:rgba(245,242,234,.55); text-decoration:none; transition:color .25s ease; z-index:1; }
+  .nav-top{ left:26px; } .nav-contact{ right:26px; color:var(--gold2); }
+  .nav-top:hover, .nav-contact:hover{ color:var(--gold2); }
+  .nav-brand{ position:absolute; bottom:30px; left:50%; transform:translateX(-50%); font-family:"Shippori Mincho",serif; font-size:11px; letter-spacing:.25em; color:rgba(245,242,234,.4); z-index:1; }
+  @media(max-width:700px){ .nav-cols{ gap:6vw 5vw; } .nav-kanji{ font-size:19px; } }
+  .nav-close{ position:absolute; top:26px; right:26px; z-index:2; width:52px; height:52px; border-radius:50%; border:1px solid rgba(227,176,75,.55); background:transparent; color:var(--gold2); font-size:16px; cursor:pointer; }
+</style>
+</head>
+<body>
+
+<a class="back-nav" href="index.html">
+  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  O-HA-SHI
+</a>
+
+<button class="nav-toggle" id="navToggle" aria-label="メニューを開く"><span></span><span></span></button>
+<nav class="nav-panel" id="navPanel">
+  <div class="nav-mark" aria-hidden="true">お</div>
+  <button class="nav-close" id="navClose" aria-label="閉じる">✕</button>
+  <div class="nav-cols">
+    <a class="nav-col" href="2026-09-13-ohashi-company-profile.html">
+      <span class="nav-num">一</span>
+      <span class="nav-kanji">会社概要</span>
+      <span class="nav-col-en">COMPANY</span>
+    </a>
+    <a class="nav-col" href="2026-09-13-ohashi-detail-01-kaigai-shinshutsu.html">
+      <span class="nav-num">二</span>
+      <span class="nav-kanji">海外進出支援</span>
+      <span class="nav-col-en">SUPPORT</span>
+    </a>
+    <a class="nav-col" href="2026-09-13-ohashi-detail-02-ekkyo-ec.html">
+      <span class="nav-num">三</span>
+      <span class="nav-kanji">越境EC</span>
+      <span class="nav-col-en">COMMERCE</span>
+    </a>
+    <a class="nav-col" href="2026-09-13-ohashi-detail-03-matsuri-fes.html">
+      <span class="nav-num">四</span>
+      <span class="nav-kanji">祭り・フェス</span>
+      <span class="nav-col-en">FESTIVAL</span>
+    </a>
+    <a class="nav-col" href="2026-09-13-ohashi-detail-04-kodomo-bunka.html">
+      <span class="nav-num">五</span>
+      <span class="nav-kanji">こども文化</span>
+      <span class="nav-col-en">CULTURE</span>
+    </a>
+  </div>
+  <a class="nav-top" href="index.html">← TOP</a>
+  <div class="nav-brand">O-HA-SHI合同会社</div>
+  <a class="nav-contact" href="index.html#sec03">CONTACT →</a>
+</nav>
+
+<header class="detail-hero">
+  <div class="eyebrow">COMPANY</div>
+  <h1 class="detail-title">2本で、<em>1膳。</em></h1>
+  <p class="detail-sub">O-HA-SHI — Japanese for chopsticks.<br>Two halves, whole only together.</p>
+</header>
+
+<section class="facts">
+  <dl>
+    <div class="fact-row"><dt>商号</dt><dd>O-HA-SHI合同会社（オハシ）</dd></div>
+    <div class="fact-row"><dt>法人番号</dt><dd>2010003052416</dd></div>
+    <div class="fact-row"><dt>設立</dt><dd>2026年8月18日</dd></div>
+    <div class="fact-row"><dt>資本金</dt><dd>880,000円</dd></div>
+    <div class="fact-row"><dt>代表社員</dt><dd>下野 知和（Kaz Shimono）</dd></div>
+    <div class="fact-row"><dt>本店所在地</dt><dd>〒101-0041　東京都千代田区神田須田町一丁目7番8号<br>Vort秋葉原IV 2階</dd></div>
+    <div class="fact-row"><dt>事業年度</dt><dd>毎年8月1日〜翌年7月31日</dd></div>
+    <div class="fact-row"><dt>事業内容</dt><dd>海外進出支援／越境EC／祭り・フェス企画運営／こども文化体験</dd></div>
+    <div class="fact-row"><dt>連絡先</dt><dd>TEL 080-2107-3416<br>MAIL o.ha.shi.26.8.18@gmail.com</dd></div>
+  </dl>
+</section>
+
+<section class="detail-cta">
+  <p>まだない物語が、<br><em>ここから、架かる。</em></p>
+  <a class="cta-link" href="index.html#sec03">CONTACT</a>
+</section>
+
+<footer>
+  O-HA-SHI合同会社　法人番号 2010003052416<br>
+  東京都千代田区神田須田町一丁目7番8号 Vort秋葉原IV 2階
+</footer>
+
+<script>
+  const revealTargets = Array.from(document.querySelectorAll('.fact-row'));
+  function checkReveal(){
+    const vh = window.innerHeight;
+    revealTargets.forEach(el=>{
+      if(el.classList.contains('is-in')) return;
+      const r = el.getBoundingClientRect();
+      if(r.top < vh * 0.85 && r.bottom > 0) el.classList.add('is-in');
+    });
+  }
+  window.addEventListener('scroll', checkReveal, {passive:true});
+  window.addEventListener('resize', checkReveal);
+  if(document.fonts && document.fonts.ready){ document.fonts.ready.then(checkReveal); }
+  window.addEventListener('load', checkReveal);
+  setTimeout(checkReveal, 800);
+
+  const navToggle = document.getElementById('navToggle');
+  const navPanel = document.getElementById('navPanel');
+  const navClose = document.getElementById('navClose');
+  navToggle.addEventListener('click', ()=>navPanel.classList.add('is-open'));
+  navClose.addEventListener('click', ()=>navPanel.classList.remove('is-open'));
+</script>
+</body>
+</html>
