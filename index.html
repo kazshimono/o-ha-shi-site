@@ -56,17 +56,29 @@
      判明。歪みが一番見た目の破綻として大きいと判断し、③（歪ませない）と②（隙間なし・
      繰り返しなし）を優先する cover に戻したが、今度は①が失われ「アメリカ大陸が見えない」
      と再度指摘された。
-     最終対応：①③（PCと同じ横幅基準の拡大率155%、縦横比は保ったまま＝auto）に戻しつつ、
-     ②で生じる上下の余白を「隠す」のではなく「意図的な演出に変える」方針に転換。
-     mask-image（上下だけ透明にフェードするグラデーション）を地図要素にかけ、地図の上下の
-     端を暗闇にふわっと溶け込ませた。これにより、余白は「切れ目」ではなく「地図が暗闇から
-     浮かび上がる」演出として見えるようになり、不自然な空白という印象を避けている */
+     ①③（PCと同じ横幅基準の拡大率155%、縦横比は保ったまま＝auto）に戻しつつ、②で生じる
+     上下の余白を「隠す」のではなく「意図的な演出に変える」方針に転換。mask-imageで地図の
+     上下の端を暗闇にふわっと溶け込ませた。
+     →ところがこれで表示範囲が広がった結果、「アメリカ大陸などが2つ出てくる」新たな不具合が
+     発覚。原因は、以前「日本を中心に・余白なしに」するためにohashi-world-map.svg内で地図を
+     <use>で複製してつなげていたこと。ズームが強い（狭い範囲しか見えない）うちは複製部分が
+     画面外に隠れて問題にならなかったが、155%という広いズームだと複製部分まで画面に入り、
+     同じ大陸が2回見えてしまっていた。
+     ここで「①PCと同じ広い範囲」「②携帯で隙間なく」「③歪ませない」に加え「④地図の複製・
+     重複が見えない」も同時に満たす方法は無いと判断し、Kazさんに最終判断を仰いだ結果、
+     「①PCと同じ広い範囲を優先」が選ばれた（＝日本は中央ではなく画面の75〜85%あたり、
+     やや右寄りになるが、重複・余白・歪みは一切ない状態を優先する）。
+     対応：ohashi-world-map.svgの<use>複製を削除し、単一の地図（実データのみ、余白も複製も
+     無し）に戻した。background-positionを中央（center）ではなく右寄せ（right center）にし、
+     地図の「実際に存在する右端」を画面の右端に合わせることで、余白や複製を一切使わずに
+     日本をできるだけ中央寄り（＝この地図データで無理なく実現できる限界）に近づけている。
+     上下のmask-imageによるフェード演出は引き続き有効 */
   .world-map-bg{
     position:absolute; inset:0; z-index:0;
     background-image:url("ohashi-world-map.svg");
     background-repeat:no-repeat;
     background-size:155% auto;
-    background-position:center;
+    background-position:right center;
     /* マスク（フェード用グラデーション）は地図と同じ大きさ・同じ位置に重ねる。
        こうしないとフェードが要素全体（HERO全体）基準になり、地図本体（中央の帯）に
        全くかからず何も起きない、ということになるため */
@@ -77,8 +89,8 @@
        そのため、地図の実際の描画高さをJSで計算し、CSS変数 --map-h(px指定) に入れて使う */
     -webkit-mask-size:155% var(--map-h, 100%);
     mask-size:155% var(--map-h, 100%);
-    -webkit-mask-position:center;
-    mask-position:center;
+    -webkit-mask-position:right center;
+    mask-position:right center;
     -webkit-mask-repeat:no-repeat;
     mask-repeat:no-repeat;
   }
@@ -481,7 +493,7 @@
   (function(){
     const el = document.querySelector('.world-map-bg');
     if(!el) return;
-    const IW = 1446.156, IH = 593.093;
+    const IW = 814.844, IH = 593.093; // ohashi-world-map.svgの実寸（地図複製を削除した単一版）
     function update(){
       const w = el.getBoundingClientRect().width;
       const renderedH = (w * 1.55) * (IH / IW);
