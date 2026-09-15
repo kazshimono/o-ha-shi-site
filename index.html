@@ -69,16 +69,25 @@
      「①PCと同じ広い範囲を優先」が選ばれた（＝日本は中央ではなく画面の75〜85%あたり、
      やや右寄りになるが、重複・余白・歪みは一切ない状態を優先する）。
      対応：ohashi-world-map.svgの<use>複製を削除し、単一の地図（実データのみ、余白も複製も
-     無し）に戻した。background-positionを中央（center）ではなく右寄せ（right center）にし、
-     地図の「実際に存在する右端」を画面の右端に合わせることで、余白や複製を一切使わずに
-     日本をできるだけ中央寄り（＝この地図データで無理なく実現できる限界）に近づけている。
-     上下のmask-imageによるフェード演出は引き続き有効 */
+     無し）に戻した。
+     →ところがこれで「PCで世界地図全体が乗っていない、一部の国しか乗っていない」との
+     再指摘。原因は、複製を削除して地図の実際の横幅が短くなった（複製込み1446→実物のみ
+     814.844）のに、ズーム値155%をそのまま使っていたこと。155%（＝横幅の64.5%だけを表示）
+     だと、日本を右端に寄せてもそこからアメリカ大陸までは物理的に届かない
+     （日本からアメリカ大陸までの距離のほうが、64.5%の表示幅より広いため）。以前は複製が
+     あったおかげで「本物ではないが見た目上のアメリカ大陸」が日本のすぐ右に存在したため
+     届いていたが、複製を消した今は本物の地図の実際の横幅そのものが足りない。
+     最終対応：ズーム値を155%から102%（ほぼ地図の横幅そのまま＝ほぼ全体が見える）に変更。
+     これにより水平方向のクロップがほぼ無くなり、世界地図の全体（アメリカ大陸〜日本〜
+     オーストラリア）が常に画面に収まるようになった。日本は地図全体の中の自然な位置
+     （やや右寄り）のまま表示され、水平方向の位置調整（right寄せ）は不要になったため
+     centerに戻した。縦方向の余白は引き続きmask-imageのフェード演出でカバーする */
   .world-map-bg{
     position:absolute; inset:0; z-index:0;
     background-image:url("ohashi-world-map.svg");
     background-repeat:no-repeat;
-    background-size:155% auto;
-    background-position:right center;
+    background-size:102% auto;
+    background-position:center;
     /* マスク（フェード用グラデーション）は地図と同じ大きさ・同じ位置に重ねる。
        こうしないとフェードが要素全体（HERO全体）基準になり、地図本体（中央の帯）に
        全くかからず何も起きない、ということになるため */
@@ -87,10 +96,10 @@
     /* mask-size の auto は「グラデーションには本来の縦横比が無い」ため、SVGのbackground-sizeの
        autoとは違い、単純に要素の高さ100%として扱われてしまう（地図本体の実際の高さとズレる）。
        そのため、地図の実際の描画高さをJSで計算し、CSS変数 --map-h(px指定) に入れて使う */
-    -webkit-mask-size:155% var(--map-h, 100%);
-    mask-size:155% var(--map-h, 100%);
-    -webkit-mask-position:right center;
-    mask-position:right center;
+    -webkit-mask-size:102% var(--map-h, 100%);
+    mask-size:102% var(--map-h, 100%);
+    -webkit-mask-position:center;
+    mask-position:center;
     -webkit-mask-repeat:no-repeat;
     mask-repeat:no-repeat;
   }
@@ -496,7 +505,7 @@
     const IW = 814.844, IH = 593.093; // ohashi-world-map.svgの実寸（地図複製を削除した単一版）
     function update(){
       const w = el.getBoundingClientRect().width;
-      const renderedH = (w * 1.55) * (IH / IW);
+      const renderedH = (w * 1.02) * (IH / IW);
       el.style.setProperty('--map-h', renderedH + 'px');
     }
     update();
