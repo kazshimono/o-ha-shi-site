@@ -47,12 +47,20 @@
      155% 100%という「縦横比の違う枠」を指定しても、SVGが自分の縦横比を保とうとして
      枠の中でさらに縮小・中央寄せ（＝上下に余白＝レターボックス）していた。
      ohashi-world-map.svgのルート要素に preserveAspectRatio="none" を追加し、
-     SVG自身にも「縦横比を無視して枠いっぱいに引き伸ばす」よう指定して解決 */
+     SVG自身にも「縦横比を無視して枠いっぱいに引き伸ばす」よう指定して解決。
+     →しかしこれを実際に公開後の携帯実機で見ると、「HEROの地図がかっこわるい」との指摘。
+     原因を計算し直すと、携帯のような縦長画面では縦方向に約3.4倍も引き伸ばす必要があり、
+     「わずかな歪み」どころか国の形が大きく間延びして見えていた（見積もりが甘かった）。
+     「①PCと同じ範囲を見せる」「②携帯で隙間なく1枚に収める」「③縦横比を歪ませない」の
+     3つは同時に成立しない（画面が縦長・地図が横長という形の違いが根本原因）ことが最終的に
+     判明。歪みが一番見た目の破綻として大きいと判断し、③（歪ませない）と②（隙間なし・
+     繰り返しなし）を優先する cover に戻し、①（PCと同じ範囲）は諦めた
+     （＝携帯の方がPCより日本周辺にズームインして見えるが、地図としては綺麗な比率を保つ）*/
   .world-map-bg{
     position:absolute; inset:0; z-index:0;
     background-image:url("ohashi-world-map.svg");
     background-repeat:no-repeat;
-    background-size:155% 100%;
+    background-size:cover;
     background-position:center;
   }
   .hero-type{ position:relative; z-index:3; text-align:center; pointer-events:none; mix-blend-mode:difference; animation:heroFloat 6s ease-in-out 2.6s infinite; }
