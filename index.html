@@ -54,14 +54,33 @@
      「①PCと同じ範囲を見せる」「②携帯で隙間なく1枚に収める」「③縦横比を歪ませない」の
      3つは同時に成立しない（画面が縦長・地図が横長という形の違いが根本原因）ことが最終的に
      判明。歪みが一番見た目の破綻として大きいと判断し、③（歪ませない）と②（隙間なし・
-     繰り返しなし）を優先する cover に戻し、①（PCと同じ範囲）は諦めた
-     （＝携帯の方がPCより日本周辺にズームインして見えるが、地図としては綺麗な比率を保つ）*/
+     繰り返しなし）を優先する cover に戻したが、今度は①が失われ「アメリカ大陸が見えない」
+     と再度指摘された。
+     最終対応：①③（PCと同じ横幅基準の拡大率155%、縦横比は保ったまま＝auto）に戻しつつ、
+     ②で生じる上下の余白を「隠す」のではなく「意図的な演出に変える」方針に転換。
+     mask-image（上下だけ透明にフェードするグラデーション）を地図要素にかけ、地図の上下の
+     端を暗闇にふわっと溶け込ませた。これにより、余白は「切れ目」ではなく「地図が暗闇から
+     浮かび上がる」演出として見えるようになり、不自然な空白という印象を避けている */
   .world-map-bg{
     position:absolute; inset:0; z-index:0;
     background-image:url("ohashi-world-map.svg");
     background-repeat:no-repeat;
-    background-size:cover;
+    background-size:155% auto;
     background-position:center;
+    /* マスク（フェード用グラデーション）は地図と同じ大きさ・同じ位置に重ねる。
+       こうしないとフェードが要素全体（HERO全体）基準になり、地図本体（中央の帯）に
+       全くかからず何も起きない、ということになるため */
+    -webkit-mask-image:linear-gradient(to bottom, transparent 0%, white 22%, white 78%, transparent 100%);
+    mask-image:linear-gradient(to bottom, transparent 0%, white 22%, white 78%, transparent 100%);
+    /* mask-size の auto は「グラデーションには本来の縦横比が無い」ため、SVGのbackground-sizeの
+       autoとは違い、単純に要素の高さ100%として扱われてしまう（地図本体の実際の高さとズレる）。
+       そのため、地図の実際の描画高さをJSで計算し、CSS変数 --map-h(px指定) に入れて使う */
+    -webkit-mask-size:155% var(--map-h, 100%);
+    mask-size:155% var(--map-h, 100%);
+    -webkit-mask-position:center;
+    mask-position:center;
+    -webkit-mask-repeat:no-repeat;
+    mask-repeat:no-repeat;
   }
   .hero-type{ position:relative; z-index:3; text-align:center; pointer-events:none; mix-blend-mode:difference; animation:heroFloat 6s ease-in-out 2.6s infinite; }
   .hero-line{ display:block; font-weight:500; letter-spacing:.04em; line-height:1.4; font-size:clamp(24px,6.4vw,58px); overflow:hidden; white-space:nowrap; }
@@ -455,6 +474,23 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
+  // 背景の世界地図：上下のフェード（mask-size）を地図の実際の描画高さに正確に合わせる。
+  // background-size:155% auto はSVG自身の縦横比から高さを自動計算してくれるが、
+  // mask-image側のグラデーションには縦横比という概念が無いため、同じ計算をJSで行い
+  // 実際のpx高さを --map-h に渡す（これをしないとフェードが地図の端とズレて不自然になる）
+  (function(){
+    const el = document.querySelector('.world-map-bg');
+    if(!el) return;
+    const IW = 1446.156, IH = 593.093;
+    function update(){
+      const w = el.getBoundingClientRect().width;
+      const renderedH = (w * 1.55) * (IH / IW);
+      el.style.setProperty('--map-h', renderedH + 'px');
+    }
+    update();
+    window.addEventListener('resize', update);
+  })();
+
   const canvas = document.getElementById('canvas3d');
   const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
