@@ -19,99 +19,27 @@
   header.hero{ position:sticky; top:0; z-index:1; height:100svh; overflow:hidden; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:22px; background:radial-gradient(ellipse at 50% 40%, #14101f 0%, #0a0812 45%, #050506 80%); }
   #canvas3d{ position:absolute; inset:0; width:100%; height:100%; z-index:1; }
   /* 宇宙（星空）ではなく平面の世界地図を背景に（海外進出支援・越境ECという事業内容にも合う）。
-     国境線入りの詳細な世界地図（Fritz Lekschas氏のsimple-world-map、CC BY-SA 3.0、ISO 3166-1データ）を使用。
-     試行錯誤の経緯（日付は全て2026-09-15）：
-     ・横幅基準で縦に敷き詰める方式→横長PCで海だけの部分に当たり「真っ暗」になる不具合
-     ・background-position数値指定→PCでは縦横比の関係でほぼずらせず日本が中央に来ない
-     ・viewBoxに余白を足して日本を中心に→今度は日本の右側が空白に見える
-     ・ohashi-world-map.svg内で地図を<use>複製してつなげ、余白なしで日本を中心に→
-       ここまでで「日本が中心・余白なし」は解決
-     ・background-size:150%前後の固定値（画面の横幅基準）→PCと携帯でズーム感は揃ったが、
-       携帯では地図の高さが画面の高さに届かず、上下に隙間ができる／repeat-yで埋めると
-       今度は「同じ地図が縦に3つ並んでる」と不自然に見える、の板挟みになった。
-     結論：「PCとまったく同じ範囲（アメリカ大陸まで）・同じズーム率を携帯でも見せる」ことと
-     「携帯で上下に隙間なく1枚だけ収める」は両立しない（携帯は画面が縦に長く、地図は横に
-     長い形なので、隙間なく埋めようとすると必然的に画面の縦幅基準の拡大＝携帯の方がPCより
-     ズームインした表示になってしまう）。一度cover（隙間なし優先）にしたが、Kazさんに
-     「PCと同じ範囲を見せる方を優先したい（携帯で多少の余白は許容する）」と明確に選んで
-     いただいたため、background-size を画面の横幅基準の固定倍率（155%）に戻した。
-     携帯のように画面が縦に長い場合、地図の高さが画面の高さに届かず上下に余白が出るが、
-     HERO自体がもともと持つ暗いグラデーション背景がそのまま見えるだけなので、
-     不自然な繰り返し（repeat-y）や不完全な余白ではなく、意図した見え方として扱う。
-     →その後「このままで、限界まで上下に引き伸ばして」との要望で、横方向の拡大率
-     （＝PCと同じ範囲を見せる部分）はそのまま、縦だけ画面の高さぴったりに引き伸ばす
-     （background-sizeの縦だけ100%指定）ことにした。ところがCSS上はこれで正しいはずが、
-     実機（携帯）で確認したところ上下の余白が消えなかった。原因はCSSではなくSVG側：
-     ohashi-world-map.svgに`preserveAspectRatio`を指定していなかったため、デフォルト値
-     （xMidYMid meet＝縦横比を保ったまま収める）が効いてしまい、background-sizeで
-     155% 100%という「縦横比の違う枠」を指定しても、SVGが自分の縦横比を保とうとして
-     枠の中でさらに縮小・中央寄せ（＝上下に余白＝レターボックス）していた。
-     ohashi-world-map.svgのルート要素に preserveAspectRatio="none" を追加し、
-     SVG自身にも「縦横比を無視して枠いっぱいに引き伸ばす」よう指定して解決。
-     →しかしこれを実際に公開後の携帯実機で見ると、「HEROの地図がかっこわるい」との指摘。
-     原因を計算し直すと、携帯のような縦長画面では縦方向に約3.4倍も引き伸ばす必要があり、
-     「わずかな歪み」どころか国の形が大きく間延びして見えていた（見積もりが甘かった）。
-     「①PCと同じ範囲を見せる」「②携帯で隙間なく1枚に収める」「③縦横比を歪ませない」の
-     3つは同時に成立しない（画面が縦長・地図が横長という形の違いが根本原因）ことが最終的に
-     判明。歪みが一番見た目の破綻として大きいと判断し、③（歪ませない）と②（隙間なし・
-     繰り返しなし）を優先する cover に戻したが、今度は①が失われ「アメリカ大陸が見えない」
-     と再度指摘された。
-     ①③（PCと同じ横幅基準の拡大率155%、縦横比は保ったまま＝auto）に戻しつつ、②で生じる
-     上下の余白を「隠す」のではなく「意図的な演出に変える」方針に転換。mask-imageで地図の
-     上下の端を暗闇にふわっと溶け込ませた。
-     →ところがこれで表示範囲が広がった結果、「アメリカ大陸などが2つ出てくる」新たな不具合が
-     発覚。原因は、以前「日本を中心に・余白なしに」するためにohashi-world-map.svg内で地図を
-     <use>で複製してつなげていたこと。ズームが強い（狭い範囲しか見えない）うちは複製部分が
-     画面外に隠れて問題にならなかったが、155%という広いズームだと複製部分まで画面に入り、
-     同じ大陸が2回見えてしまっていた。
-     ここで「①PCと同じ広い範囲」「②携帯で隙間なく」「③歪ませない」に加え「④地図の複製・
-     重複が見えない」も同時に満たす方法は無いと判断し、Kazさんに最終判断を仰いだ結果、
-     「①PCと同じ広い範囲を優先」が選ばれた（＝日本は中央ではなく画面の75〜85%あたり、
-     やや右寄りになるが、重複・余白・歪みは一切ない状態を優先する）。
-     対応：ohashi-world-map.svgの<use>複製を削除し、単一の地図（実データのみ、余白も複製も
-     無し）に戻した。
-     →ところがこれで「PCで世界地図全体が乗っていない、一部の国しか乗っていない」との
-     再指摘。原因は、複製を削除して地図の実際の横幅が短くなった（複製込み1446→実物のみ
-     814.844）のに、ズーム値155%をそのまま使っていたこと。155%（＝横幅の64.5%だけを表示）
-     だと、日本を右端に寄せてもそこからアメリカ大陸までは物理的に届かない
-     （日本からアメリカ大陸までの距離のほうが、64.5%の表示幅より広いため）。以前は複製が
-     あったおかげで「本物ではないが見た目上のアメリカ大陸」が日本のすぐ右に存在したため
-     届いていたが、複製を消した今は本物の地図の実際の横幅そのものが足りない。
-     ズーム値を155%→102%に変更し、水平クロップをほぼ無くして解決したが、日本は地図内の
-     自然な位置（やや右寄り、画面の80%あたり）のままだった。
-     →Kazさんから「これが日本を中心とした世界地図」と、太平洋（日本のあたり）を中心に
-     大西洋側で地図を割った、いわゆる「日本中心図法」の参考画像が届いた。
-     これでようやく根本原因が判明：素材の世界地図（Fritz Lekschas氏のsimple-world-map）は
-     大西洋のあたりで地図を割った、日本を中心にしない一般的な図法だった。日本を中心にする
-     には、CSSでどう頑張っても無理で、**地図データ自体を「日本の反対側（大西洋のあたり）で
-     割り直す」必要があった。**
-     地図は本来ぐるっと一周つながっているため、以前作った<use>による複製（一周分をもう1つ
-     隣に並べる仕組み）を利用し、viewBoxの開始位置を「日本の座標－地図の全幅の半分」の
-     位置までずらした。これにより、viewBoxの左半分に元の地図の後半（ヨーロッパ〜アジア〜
-     日本〜太平洋の一部）、右半分に複製の前半（太平洋の残り〜南北アメリカ〜大西洋の手前）が
-     描画され、日本がちょうど真ん中に来る「日本中心図法」を素材データのレベルで再現できた。
-     CSS側（background-size:102% auto、position:centerなど）は変更不要で、
-     このviewBoxの中身が変わっただけで日本中心・世界全体表示・複製なし・歪みなしが揃った */
+     国境線入りの詳細な世界地図（Fritz Lekschas氏のsimple-world-map、CC BY-SA 3.0、ISO 3166-1データ）を
+     日本中心図法（太平洋側を中心に、大西洋のあたりで割り直したもの。ohashi-world-map.svgの
+     viewBoxで実現。詳細はmemory.mdの教訓を参照）に加工して使用。
+     長い試行錯誤の末（2026-09-15〜16）、「画面いっぱいに切り取って見せる」方式
+     （cover／固定%ズーム／position調整）はどれも、隙間・重複・歪み・偏りのどれかが必ず
+     発生することが判明。Kazさんから「日本中心図法の参考画像と全く同じにして」という
+     明確な指示を受け、方針を転換：地図全体を一切欠けさせず必ず表示する
+     background-size:containに変更。これにより複製・歪み・切れ端・偏りは原理的に発生しない。
+     画面の形に応じて生まれる余白（contain特有の左右または上下のレターボックス）は、
+     HERO自体が元々持つ radial-gradient の暗い演出と同じ考え方の「ふわっと光る」
+     ビネット（mask-image、四辺すべてを暗闇に溶け込ませる）で自然に馴染ませている。
+     この方式ならJSでの高さ計算（mask-sizeとbackground-sizeを合わせる処理）も不要になり、
+     実装がシンプルになった */
   .world-map-bg{
     position:absolute; inset:0; z-index:0;
     background-image:url("ohashi-world-map.svg");
     background-repeat:no-repeat;
-    background-size:102% auto;
+    background-size:contain;
     background-position:center;
-    /* マスク（フェード用グラデーション）は地図と同じ大きさ・同じ位置に重ねる。
-       こうしないとフェードが要素全体（HERO全体）基準になり、地図本体（中央の帯）に
-       全くかからず何も起きない、ということになるため */
-    -webkit-mask-image:linear-gradient(to bottom, transparent 0%, white 22%, white 78%, transparent 100%);
-    mask-image:linear-gradient(to bottom, transparent 0%, white 22%, white 78%, transparent 100%);
-    /* mask-size の auto は「グラデーションには本来の縦横比が無い」ため、SVGのbackground-sizeの
-       autoとは違い、単純に要素の高さ100%として扱われてしまう（地図本体の実際の高さとズレる）。
-       そのため、地図の実際の描画高さをJSで計算し、CSS変数 --map-h(px指定) に入れて使う */
-    -webkit-mask-size:102% var(--map-h, 100%);
-    mask-size:102% var(--map-h, 100%);
-    -webkit-mask-position:center;
-    mask-position:center;
-    -webkit-mask-repeat:no-repeat;
-    mask-repeat:no-repeat;
+    -webkit-mask-image:radial-gradient(ellipse 62% 62% at 50% 50%, white 0%, white 45%, transparent 82%);
+    mask-image:radial-gradient(ellipse 62% 62% at 50% 50%, white 0%, white 45%, transparent 82%);
   }
   .hero-type{ position:relative; z-index:3; text-align:center; pointer-events:none; mix-blend-mode:difference; animation:heroFloat 6s ease-in-out 2.6s infinite; }
   .hero-line{ display:block; font-weight:500; letter-spacing:.04em; line-height:1.4; font-size:clamp(24px,6.4vw,58px); overflow:hidden; white-space:nowrap; }
@@ -505,23 +433,6 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
-  // 背景の世界地図：上下のフェード（mask-size）を地図の実際の描画高さに正確に合わせる。
-  // background-size:155% auto はSVG自身の縦横比から高さを自動計算してくれるが、
-  // mask-image側のグラデーションには縦横比という概念が無いため、同じ計算をJSで行い
-  // 実際のpx高さを --map-h に渡す（これをしないとフェードが地図の端とズレて不自然になる）
-  (function(){
-    const el = document.querySelector('.world-map-bg');
-    if(!el) return;
-    const IW = 814.844, IH = 593.093; // ohashi-world-map.svgの実寸（地図複製を削除した単一版）
-    function update(){
-      const w = el.getBoundingClientRect().width;
-      const renderedH = (w * 1.02) * (IH / IW);
-      el.style.setProperty('--map-h', renderedH + 'px');
-    }
-    update();
-    window.addEventListener('resize', update);
-  })();
-
   const canvas = document.getElementById('canvas3d');
   const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
