@@ -11,12 +11,12 @@
 <style>
   :root{ --gold:#e3b04b; --gold2:#ffd98a; --ink:#050506; --paper:#f5f2ea; }
   *{box-sizing:border-box; margin:0; padding:0;}
-  html,body{ background:var(--ink); color:var(--paper); overflow-x:hidden; }
+  html,body{ background:var(--ink); color:var(--paper); overflow-x:hidden; overflow-x:clip; } /* clip は hidden と違ってスクロール領域を作らないので、position:sticky が効く（hiddenだと効かなかった） */
   body{ font-family:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN",sans-serif; }
   .hero-line, .big-line, .num-bg, .meaning-kanji, .bridge-title, .back-statement{ font-family:"Shippori Mincho",serif; }
   a{color:inherit;text-decoration:none;}
 
-  header.hero{ position:sticky; top:0; z-index:1; height:100svh; overflow:hidden; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:22px; background:radial-gradient(ellipse at 50% 40%, #14101f 0%, #0a0812 45%, #050506 80%); }
+  header.hero{ position:relative; z-index:1; height:100svh; overflow:hidden; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:22px; background:radial-gradient(ellipse at 50% 40%, #14101f 0%, #0a0812 45%, #050506 80%); }
   #canvas3d{ position:absolute; inset:0; width:100%; height:100%; z-index:1; }
   /* 宇宙（星空）ではなく平面の世界地図を背景に（海外進出支援・越境ECという事業内容にも合う）。
      国境線入りの詳細な世界地図（Fritz Lekschas氏のsimple-world-map、CC BY-SA 3.0、ISO 3166-1データ）を
@@ -34,12 +34,12 @@
      実装がシンプルになった */
   .world-map-bg{
     position:absolute; inset:0; z-index:0;
-    background-image:url("ohashi-world-map.svg");
+    background-image:url("ohashi-world-map-v2.svg");
     background-repeat:no-repeat;
     background-size:contain;
     background-position:center;
-    -webkit-mask-image:radial-gradient(ellipse 62% 62% at 50% 50%, white 0%, white 45%, transparent 82%);
-    mask-image:radial-gradient(ellipse 62% 62% at 50% 50%, white 0%, white 45%, transparent 82%);
+    -webkit-mask-image:radial-gradient(ellipse 75% 70% at 50% 50%, white 0%, white 60%, transparent 100%);
+    mask-image:radial-gradient(ellipse 75% 70% at 50% 50%, white 0%, white 60%, transparent 100%);
   }
   .hero-type{ position:relative; z-index:3; text-align:center; pointer-events:none; mix-blend-mode:difference; animation:heroFloat 6s ease-in-out 2.6s infinite; }
   .hero-line{ display:block; font-weight:500; letter-spacing:.04em; line-height:1.4; font-size:clamp(24px,6.4vw,58px); overflow:hidden; white-space:nowrap; }
@@ -62,8 +62,9 @@
   .cursor-tag.is-active{ opacity:1; transform:translate(-50%,-50%) scale(1); }
   @media(hover:none){ header.hero{ cursor:auto; } .cursor-tag{ display:none; } }
 
-  section{ position:sticky; top:0; padding:140px 6vw; min-height:100vh; box-sizing:border-box; }
-  /* 各セクションをその場に固定し、次のセクションが下から覆いかぶさるように上がってくる「積み重ね」構成（Kaneko Opticalの「上にあがってくる」動きを参照） */
+  section{ position:relative; padding:140px 6vw; min-height:100vh; box-sizing:border-box; }
+  /* 以前は各章を position:sticky で重ねる設計だったが、overflow-x:hidden のせいで一度も効いておらず、章は普通に流れていた。
+     Kazさんが見て良しとしてきた「流れる」見た目を保つため、止めるのはORIGINだけ（.origin-pin） */
   #sec01{ z-index:2; }
   #sec02{ z-index:3; }
   #sec03{ z-index:4; }
@@ -143,21 +144,22 @@
   .meaning-kanji{ text-align:right; font-size:30px; font-weight:600; letter-spacing:.04em; color:var(--ink); }
   .meaning-text{ text-align:left; font-size:12px; letter-spacing:.05em; color:#8a7d6d; }
   /* 四つの物語：45R「デニムかるた」を参考に、4枚のカードを円状に散らして常時全部見せる構成に変更 */
-  .story-scatter{ position:relative; width:min(92vw,420px); height:520px; margin:56px auto 0; }
-  @media(min-width:820px){ .story-scatter{ width:min(84vw,760px); height:480px; } }
+  .story-scatter{ position:relative; width:min(92vw,420px); height:430px; margin:56px auto 0; }
+  @media(min-width:820px){ .story-scatter{ width:min(84vw,760px); height:540px; } }
   .story-scatter .story-card{ position:absolute; top:0; left:0; width:clamp(150px,40vw,192px); aspect-ratio:3/4; border:1px solid rgba(227,176,75,.4); border-radius:4px; padding:18px; display:flex; flex-direction:column; justify-content:space-between; background:rgba(10,8,6,.82); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); box-shadow:0 24px 50px -14px rgba(0,0,0,.65); --en:1; transform:translate(-50%,-50%) translate(calc(var(--dx,0px) * (1 - var(--en))), calc(var(--dy,0px) * (1 - var(--en)))) rotate(var(--rot,0deg)) scale(calc(0.82 + 0.18 * var(--en))); transition:box-shadow .35s ease; animation:storyCardBreathe 5s ease-in-out infinite; animation-delay:var(--bd,0s); }
   .story-scatter .story-card:hover, .story-scatter .story-card:focus-visible{ transform:translate(-50%,-50%) rotate(0deg) scale(1.08) !important; transition:transform .35s cubic-bezier(.16,1,.3,1); z-index:20 !important; box-shadow:0 34px 64px -12px rgba(0,0,0,.75); }
-  .story-scatter .story-card[data-i="0"]{ top:26%; left:28%; --rot:-8deg; --bd:0s; --dx:-90px; --dy:-70px; z-index:2; }
-  .story-scatter .story-card[data-i="1"]{ top:19%; left:72%; --rot:6deg; --bd:1.2s; --dx:90px; --dy:-70px; z-index:3; }
-  .story-scatter .story-card[data-i="2"]{ top:76%; left:26%; --rot:5deg; --bd:2.4s; --dx:-90px; --dy:80px; z-index:1; }
-  .story-scatter .story-card[data-i="3"]{ top:81%; left:74%; --rot:-6deg; --bd:3.6s; --dx:90px; --dy:90px; z-index:4; }
-  /* PC（横幅820px以上、カード同士の間隔に余裕がある画面）だけ、4枚をもう少し中央寄りに集める。
-     携帯は元々の間隔でも十分近いため（むしろこれ以上寄せるとカード同士が重なりすぎる）現状維持 */
+  .story-scatter .story-card[data-i="0"]{ top:22%; left:30%; --rot:-8deg; --bd:0s; --dx:-90px; --dy:-70px; z-index:1; }
+  .story-scatter .story-card[data-i="1"]{ top:35%; left:71%; --rot:6deg; --bd:1.2s; --dx:90px; --dy:-70px; z-index:2; }
+  .story-scatter .story-card[data-i="2"]{ top:58%; left:31%; --rot:5deg; --bd:2.4s; --dx:-90px; --dy:80px; z-index:3; }
+  .story-scatter .story-card[data-i="3"]{ top:71%; left:70%; --rot:-6deg; --bd:3.6s; --dx:90px; --dy:90px; z-index:4; }
+  /* 2026-09-21 Kazさん「もう少しカードが重なってもいい」：左右交互に少しずつ下げて、上のカードの下端（番号のあたり）に次のカードが重なる形に。
+     横に大きく重ねると説明文が隠れるため、横の重なりはカードの余白分だけ。下のカードほど手前 */
+  /* PCも同じ考え方でさらに中央へ寄せる */
   @media(min-width:820px){
-    .story-scatter .story-card[data-i="0"]{ top:30%; left:38%; }
-    .story-scatter .story-card[data-i="1"]{ top:24%; left:62%; }
-    .story-scatter .story-card[data-i="2"]{ top:72%; left:37%; }
-    .story-scatter .story-card[data-i="3"]{ top:76%; left:63%; }
+    .story-scatter .story-card[data-i="0"]{ top:28%; left:40%; }
+    .story-scatter .story-card[data-i="1"]{ top:37%; left:66%; }
+    .story-scatter .story-card[data-i="2"]{ top:64%; left:41%; }
+    .story-scatter .story-card[data-i="3"]{ top:73%; left:67%; }
   }
   .story-scatter .story-card::before{ content:""; position:absolute; inset:0; pointer-events:none;
     background:
@@ -193,7 +195,6 @@
   .origin-tags span{ font-size:11.5px; letter-spacing:.05em; padding:8px 16px; border:1px solid rgba(165,129,58,.55); border-radius:20px; color:#7a5a22; background:rgba(227,176,75,.1); }
 
   .cta{ position:relative; text-align:center; background:linear-gradient(160deg,#0b0d10,#1a1408); overflow:hidden; }
-  #canvas3d-cta{ position:absolute; inset:0; z-index:0; opacity:.55; }
   .cta .section-content{ position:relative; z-index:1; }
   .cta .eyebrow{ opacity:0; transform:translateX(-32px); transition:opacity .8s ease, transform .8s ease; }
   .cta .big-line{ opacity:0; transform:translateX(56px); transition:opacity .9s ease .12s, transform .9s ease .12s; }
@@ -235,6 +236,55 @@
   .nav-brand{ position:absolute; bottom:30px; left:50%; transform:translateX(-50%); font-family:"Shippori Mincho",serif; font-size:11px; letter-spacing:.25em; color:rgba(245,242,234,.4); z-index:1; }
   @media(max-width:700px){ .nav-cols{ gap:6vw 5vw; } .nav-kanji{ font-size:19px; } }
   .nav-close{ position:absolute; top:26px; right:26px; z-index:2; width:52px; height:52px; border-radius:50%; border:1px solid rgba(227,176,75,.55); background:transparent; color:var(--gold2); font-size:16px; cursor:pointer; }
+
+  /* 2026-09-21 試作：Diamond Journeyを参考に、TOPの箸がスクロールに合わせて各章へついてくる。
+     箸（HERO）→ 端（ORIGINで左右の両端に立つ）→ 橋（四つの物語の上に架かる）→ CONTACTで交差から一膳へ */
+  #canvas3d-journey{ position:fixed; inset:0; width:100%; height:100%; z-index:5; pointer-events:none; opacity:0; }
+  .sec-mark{ height:0; }
+  /* ORIGINを画面に止めたまま、箸が「端→箸→橋」と形を変える。止めている間のスクロール分が .origin-dwell */
+  .origin-pin{ position:relative; }
+  .origin-pin > #sec01{ position:sticky; top:0; }
+  .origin-dwell{ height:200vh; }
+  @media(max-width:420px){
+    /* 小さいスマホでも、止めている間にORIGINの中身が画面の下で切れないように詰める */
+    .origin-pin .meaning-item{ padding:10px 0; }
+    .origin-pin .origin-big{ margin-top:28px; }
+    .origin-pin .origin-panel-text{ font-size:22px; }
+  }
+  @media(prefers-reduced-motion:reduce){
+    *, *::before, *::after{ animation:none !important; transition-duration:.01s !important; }
+    .origin-dwell{ display:none; }
+  }
+  /* 箸が形を変えるのに合わせて、「箸・橋・端」のいまの字だけを光らせる */
+  .meanings.has-lit .meaning-item{ opacity:.32; transition:opacity .5s ease, transform .7s ease; transition-delay:0s; }
+  .meanings.has-lit .meaning-item.is-lit{ opacity:1; }
+  .meaning-kanji{ display:inline-block; transition:color .5s ease, transform .5s cubic-bezier(.16,1,.3,1); }
+  .meanings.has-lit .meaning-item.is-lit .meaning-kanji{ color:#a5813a; transform:scale(1.18); }
+  .meanings.has-lit .meaning-item.is-lit .meaning-text{ color:#4a453d; }
+
+  /* 章の目次（IVRESS参考）：PCは左端に縦の一覧、スマホは左下の「いまの章」をタップで一覧 */
+  .ci-progress{ position:fixed; top:0; left:0; width:100%; height:2px; z-index:45; transform-origin:left; transform:scaleX(0); background:rgba(245,242,234,.5); pointer-events:none; }
+  .chapter-index{ position:fixed; left:22px; top:50%; transform:translateY(-50%); z-index:40; display:flex; flex-direction:column; gap:2px; padding:14px; border-radius:14px; background:rgba(5,5,6,.55); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); border:1px solid rgba(245,242,234,.14); opacity:0; pointer-events:none; transition:opacity .5s ease, transform .3s ease; }
+  .chapter-index.is-shown{ opacity:1; pointer-events:auto; }
+  .ci-item{ display:flex; align-items:center; gap:10px; padding:6px 4px; font-size:11px; letter-spacing:.14em; color:rgba(245,242,234,.5); cursor:pointer; background:none; border:0; text-align:left; font-family:inherit; transition:color .3s ease; }
+  .ci-item .ci-num{ font-family:"Shippori Mincho",serif; font-size:10px; color:rgba(245,242,234,.35); width:16px; }
+  .ci-item .ci-bar{ width:0; height:1px; background:var(--gold2); transition:width .4s ease; }
+  .ci-item.is-current{ color:var(--paper); } /* 金は「箸・見出しの強調・主役」だけ。目次は脇役なのでオフホワイト、金は現在地の短い線のみ */
+  .ci-item.is-current .ci-bar{ width:16px; }
+  .ci-sub{ display:block; padding:3px 4px 3px 30px; font-size:10.5px; letter-spacing:.05em; color:rgba(245,242,234,.42); transition:color .3s ease; }
+  .ci-item:hover, .ci-sub:hover{ color:var(--paper); }
+  .ci-now{ display:none; }
+  @media(max-width:820px){
+    .chapter-index, .chapter-index.is-shown{ left:16px; top:auto; bottom:72px; transform:translateY(10px); opacity:0; pointer-events:none; }
+    .chapter-index.is-open{ opacity:1; transform:none; pointer-events:auto; }
+    .ci-item{ min-height:44px; padding:0 4px; font-size:12px; }
+    .ci-sub{ display:flex; align-items:center; min-height:44px; padding:0 4px 0 30px; font-size:12px; }
+    .ci-now{ display:flex; position:fixed; left:16px; bottom:18px; z-index:41; align-items:center; gap:10px; padding:11px 16px; border-radius:22px; background:rgba(5,5,6,.62); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); min-height:44px; border:1px solid rgba(245,242,234,.3); color:var(--paper); font-size:11px; letter-spacing:.14em; font-family:inherit; opacity:0; pointer-events:none; transition:opacity .4s ease; }
+    .ci-now.is-shown{ opacity:1; pointer-events:auto; }
+    .ci-now .ci-num{ font-family:"Shippori Mincho",serif; color:rgba(245,242,234,.45); }
+    /* スマホでは、すりガラス効果を毎フレーム計算し直すと重いので、ほぼ不透明の地にする */
+    .chapter-index, .ci-now{ backdrop-filter:none; -webkit-backdrop-filter:none; background:rgba(5,5,6,.88); }
+  }
 </style>
 </head>
 <body>
@@ -289,7 +339,24 @@
   <div class="scroll-cue">SCROLL ↓</div>
 </header>
 <div class="cursor-tag" id="cursorTag">SCROLL</div>
+<canvas id="canvas3d-journey" aria-hidden="true"></canvas>
 
+<div class="ci-progress" id="ciProgress" aria-hidden="true"></div>
+<nav class="chapter-index" id="chapterIndex" aria-label="章の目次">
+  <button class="ci-item" data-go="0"><span class="ci-num">00</span><span class="ci-bar"></span>TOP</button>
+  <button class="ci-item" data-go="1"><span class="ci-num">01</span><span class="ci-bar"></span>ORIGIN</button>
+  <button class="ci-item" data-go="2"><span class="ci-num">02</span><span class="ci-bar"></span>WHAT WE DO</button>
+  <a class="ci-sub" href="2026-09-13-ohashi-detail-01-kaigai-shinshutsu.html">海外進出支援</a>
+  <a class="ci-sub" href="2026-09-13-ohashi-detail-02-ekkyo-ec.html">越境EC</a>
+  <a class="ci-sub" href="2026-09-13-ohashi-detail-03-matsuri-fes.html">祭り・フェス企画運営</a>
+  <a class="ci-sub" href="2026-09-13-ohashi-detail-04-kodomo-bunka.html">こども文化体験</a>
+  <button class="ci-item" data-go="3"><span class="ci-num">03</span><span class="ci-bar"></span>NEXT</button>
+  <a class="ci-sub" href="2026-09-13-ohashi-company-profile.html">会社概要</a>
+</nav>
+<button class="ci-now" id="ciNow" aria-label="章の目次を開く"><span class="ci-num">00</span><span class="ci-label">TOP</span><span>▴</span></button>
+
+<div class="sec-mark" id="mark1"></div>
+<div class="origin-pin">
 <section class="bridges" id="sec01">
   <div class="num-bg" data-parallax>01</div>
   <div class="section-content">
@@ -303,19 +370,21 @@
   <div class="origin-big" id="originCard">
     <div class="origin-panel is-active" data-i="0">
      <div class="origin-panel-inner">
-      <p class="origin-panel-text"><span class="line">O-HA-SHI合同会社は、</span><span class="line">国と国、文化と文化を、</span><span class="line">橋渡しする会社です。</span></p>
-      <div class="origin-tags"><span>海外進出支援</span><span>越境EC</span></div>
+      <p class="origin-panel-text"><span class="line">こちらの端と、むこうの端。</span><span class="line">そのあいだに、</span><span class="line">橋をかける。</span></p>
      </div>
     </div>
     <div class="origin-panel" data-i="1">
      <div class="origin-panel-inner">
-      <p class="origin-panel-text"><span class="line">海外進出支援・越境EC・</span><span class="line">祭り／フェス企画運営・</span><span class="line">こども文化体験。</span></p>
-      <div class="origin-tags"><span>祭り・フェス企画運営</span><span>こども文化体験</span></div>
+      <p class="origin-panel-text"><span class="line">はじめる。届ける。</span><span class="line">集う。受け継ぐ。</span><span class="line">四つの、橋のかけ方。</span></p>
      </div>
     </div>
   </div>
 </section>
 
+<!-- ORIGINを画面に止めたまま、箸が「箸→橋→端」と形を変える間のスクロール分 -->
+<div class="origin-dwell" aria-hidden="true"></div>
+</div>
+<div class="sec-mark" id="mark2"></div>
 <section id="sec02">
   <div class="num-bg" data-parallax>02</div>
   <div class="section-content">
@@ -410,9 +479,9 @@
       </div>
 </section>
 
+<div class="sec-mark" id="mark3"></div>
 <section class="cta" id="sec03">
   <div class="num-bg" data-parallax>03</div>
-  <canvas id="canvas3d-cta"></canvas>
   <div class="section-content">
     <div class="eyebrow">( NEXT )</div>
     <p class="big-line kinetic" style="margin:0 auto;">
@@ -421,7 +490,7 @@
     </p>
     <div class="magnetic-wrap">
       <div class="magnetic-ring"></div>
-      <a href="#" class="magnetic-btn" id="magBtn">CONTACT</a>
+      <a href="mailto:o.ha.shi.26.8.18@gmail.com" class="magnetic-btn" id="magBtn">CONTACT</a>
     </div>
   </div>
 </section>
@@ -542,7 +611,8 @@
   const heroEl = document.querySelector('header.hero');
   function checkHeroVisible(){
     const r = heroEl.getBoundingClientRect();
-    visible = r.bottom > 0 && r.top < window.innerHeight;
+    // HEROが画面の上へ流れきったら描画を止める
+    visible = window.scrollY < heroEl.offsetHeight;
   }
   window.addEventListener('scroll', checkHeroVisible, {passive:true});
   window.addEventListener('resize', checkHeroVisible);
@@ -678,107 +748,21 @@
       prevActive = active;
       const activePanel = panels.find(p => Number(p.dataset.i) === active);
       const inner = activePanel.querySelector('.origin-panel-inner');
-      card.style.minHeight = inner.offsetHeight + 'px';
+      // 高さは全パネルのいちばん高いものに固定（切り替えのたびに高さが変わると、章の区切りの位置までずれるため）
+      card.style.minHeight = Math.max(...panels.map(p => p.querySelector('.origin-panel-inner').offsetHeight)) + 'px';
     }
     apply();
     window.addEventListener('resize', apply);
-    function next(){ active = (active + 1) % panels.length; apply(); }
+    // 箸が形を変えている間（ORIGINを止めている間）は切り替えない。視線を箸と「箸・橋・端」に集めるため
+    function next(){ if(window.originPinned) return; active = (active + 1) % panels.length; apply(); }
+    // 止めている間は、箸の動き（端→橋）と同じことを言っている1枚目に戻しておく
+    window.originShowFirst = () => { if(active !== 0){ active = 0; apply(); } };
     let timer = setInterval(next, 5000);
     card.addEventListener('mouseenter', ()=>{ clearInterval(timer); });
     card.addEventListener('mouseleave', ()=>{ timer = setInterval(next, 5000); });
   })();
 
-  // second 3D scene for CTA section (crossed chopsticks)
-  const ctaCanvas = document.getElementById('canvas3d-cta');
-  const ctaRenderer = new THREE.WebGLRenderer({ canvas: ctaCanvas, antialias:true, alpha:true });
-  ctaRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  const ctaScene = new THREE.Scene();
-  const ctaCamera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
-  ctaCamera.position.set(0, 0, 9);
-
-  function resizeCta(){
-    const sec = document.getElementById('sec03');
-    const w = sec.clientWidth, h = sec.clientHeight;
-    ctaRenderer.setSize(w, h);
-    const aspect = w/h;
-    ctaCamera.aspect = aspect;
-    // HEROと同じ考え方：画角も広げつつ、はみ出さない範囲でお箸をできるだけ大きく保つ
-    const ctaFov = aspect >= 1 ? 45 : 45 + (1 - aspect) * 35;
-    ctaCamera.fov = ctaFov;
-    const ctaHalfTan = Math.tan(THREE.MathUtils.degToRad(ctaFov / 2));
-    ctaCamera.position.z = Math.max(9, 4.2 / (ctaHalfTan * aspect));
-    ctaCamera.updateProjectionMatrix();
-  }
-  resizeCta();
-  window.addEventListener('resize', resizeCta);
-  window.addEventListener('load', resizeCta);
-
-  const ctaGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map:glowTex, transparent:true, opacity:.4, blending:THREE.AdditiveBlending }));
-  ctaGlow.scale.set(8,8,1);
-  ctaGlow.position.set(0,0,-2);
-  ctaScene.add(ctaGlow);
-
-  const ctaGroup = new THREE.Group();
-  ctaScene.add(ctaGroup);
-  const ctaMatA = new THREE.MeshPhysicalMaterial({ color:0xe3b04b, metalness:0.9, roughness:0.22, clearcoat:1, clearcoatRoughness:0.15 });
-  const ctaMatB = new THREE.MeshPhysicalMaterial({ color:0xd9a344, metalness:0.88, roughness:0.3, clearcoat:0.8, clearcoatRoughness:0.2 });
-  const ctaStick1 = new THREE.Mesh(stickGeo, ctaMatA);
-  ctaStick1.rotation.z = Math.PI/4;
-  ctaGroup.add(ctaStick1);
-  const ctaStick2 = new THREE.Mesh(stickGeo, ctaMatB);
-  ctaStick2.rotation.z = -Math.PI/4;
-  ctaGroup.add(ctaStick2);
-
-  const ctaKey = new THREE.PointLight(0xffe3a8, 3.4, 30);
-  ctaKey.position.set(4, 3, 6);
-  ctaScene.add(ctaKey);
-  const ctaRim = new THREE.PointLight(0x88aaff, 1.3, 30);
-  ctaRim.position.set(-5, -2, -4);
-  ctaScene.add(ctaRim);
-  const ctaFill = new THREE.PointLight(0xffb877, 1.2, 30);
-  ctaFill.position.set(-2, -3, 4);
-  ctaScene.add(ctaFill);
-  ctaScene.add(new THREE.AmbientLight(0x404040, 1.1));
-
-  let ctaVisible = false;
-  const sec03El = document.getElementById('sec03');
-  function checkCtaVisible(){
-    const r = sec03El.getBoundingClientRect();
-    ctaVisible = r.bottom > 0 && r.top < window.innerHeight;
-  }
-  window.addEventListener('scroll', checkCtaVisible, {passive:true});
-  window.addEventListener('resize', checkCtaVisible);
-  checkCtaVisible();
-
-  let ctaScrollProgress = 0;
-  window.addEventListener('scroll', ()=>{
-    const rect = sec03El.getBoundingClientRect();
-    ctaScrollProgress = Math.max(0, Math.min(1, (window.innerHeight - rect.top) / (window.innerHeight * 0.9)));
-  }, {passive:true});
-
-  function animateCta(){
-    requestAnimationFrame(animateCta);
-    if(!ctaVisible) return;
-    const ctaT = clock.getElapsedTime();
-    const ctaSpeed = 0.0005;
-    const ctaSpinDir = Math.floor(ctaT / REVERSAL_CYCLE_SEC) % 2 === 0 ? 1 : -1;
-    const ctaStep = ctaSpeed * ctaSpinDir;
-    ctaStick1.rotation.y += ctaStep;
-    ctaStick2.rotation.y -= ctaStep;
-    ctaGroup.rotation.x += 0.0012;
-    // スクロールで進むほど交差(✕)から寄り添う1膳へ変化＝「物語が形になる」演出
-    const crossAngle = (Math.PI/4) * (1 - ctaScrollProgress * 0.8);
-    ctaStick1.rotation.z = crossAngle;
-    ctaStick2.rotation.z = -crossAngle;
-    ctaStick1.position.y = 0.05 + ctaScrollProgress * 0.22;
-    ctaStick2.position.y = -0.05 - ctaScrollProgress * 0.22;
-    // 画面の下からお箸がせり上がってくる（Jesko Jetsの「飛行機が下からせり上がる」演出を参照）
-    ctaGroup.position.y = -4.2 + ctaScrollProgress * 4.2;
-    const ctaScale = 0.7 + ctaScrollProgress * 0.3;
-    ctaGroup.scale.set(ctaScale, ctaScale, ctaScale);
-    ctaRenderer.render(ctaScene, ctaCamera);
-  }
-  animateCta();
+  // CONTACTの箸は、上から続いてきた同じ箸（画面固定の描画面）が受け持つ。以前のCONTACT専用の3D描画はやめた（2026-09-21）
 
   // cursor-follow "SCROLL" tag over the hero (IVRESSの「TAP TO BEGIN」の技術を参照)
   const cursorTag = document.getElementById('cursorTag');
@@ -788,6 +772,213 @@
     cursorTag.classList.add('is-active');
   });
   heroEl.addEventListener('mouseleave', ()=>{ cursorTag.classList.remove('is-active'); });
+
+  // ── 2026-09-21 試作：箸がスクロールについてくる（Diamond Journey参考） ──
+  // HEROの箸と同じ形・同じ回転のまま、画面に固定した別の描画面へ引き継ぎ、章ごとに形を変える
+  const jCanvas = document.getElementById('canvas3d-journey');
+  const jRenderer = new THREE.WebGLRenderer({ canvas: jCanvas, antialias:true, alpha:true });
+  jRenderer.setPixelRatio(Math.min(window.devicePixelRatio, window.matchMedia('(hover:none)').matches ? 1.5 : 2)); // スマホは少し粗くして軽くする
+  const jScene = new THREE.Scene();
+  const jGroup = new THREE.Group();
+  jScene.add(jGroup);
+  const jMatA = new THREE.MeshPhysicalMaterial({ color:0xe3b04b, metalness:0.9, roughness:0.22, clearcoat:1, clearcoatRoughness:0.15 });
+  const jMatB = new THREE.MeshPhysicalMaterial({ color:0xd9a344, metalness:0.88, roughness:0.3, clearcoat:0.8, clearcoatRoughness:0.2 });
+  const jTipMat = new THREE.MeshPhysicalMaterial({ color:0x1a140a, metalness:0.4, roughness:0.35, clearcoat:0.6 });
+  function makeJStick(mat){
+    const g = new THREE.Group();
+    g.add(new THREE.Mesh(stickGeo, mat));
+    const tip = new THREE.Mesh(tipGeo, jTipMat);
+    tip.position.set(0, 3.1, 0);
+    g.add(tip);
+    return g;
+  }
+  const jStick1 = makeJStick(jMatA), jStick2 = makeJStick(jMatB);
+  jGroup.add(jStick1); jGroup.add(jStick2);
+  const jKey = new THREE.PointLight(0xffe3a8, 3.4, 40); jKey.position.set(4, 3, 6); jScene.add(jKey);
+  const jRim = new THREE.PointLight(0x88aaff, 1.6, 40); jRim.position.set(-5, -2, -4); jScene.add(jRim);
+  const jFill = new THREE.PointLight(0xffb877, 1.2, 40); jFill.position.set(-2, -3, 4); jScene.add(jFill);
+  jScene.add(new THREE.AmbientLight(0x404040, 1.1));
+
+  const marks = [null, document.getElementById('mark1'), document.getElementById('mark2'), document.getElementById('mark3')];
+  let markTops = [0, 0, 0, 0];
+  function measureMarks(){
+    markTops = marks.map(m => m ? m.getBoundingClientRect().top + window.scrollY : 0);
+  }
+  function jResize(){
+    jRenderer.setSize(window.innerWidth, window.innerHeight);
+    measureMarks();
+  }
+  jResize();
+  window.addEventListener('resize', jResize);
+  window.addEventListener('load', jResize);
+  // ORIGINの文章が5秒ごとに切り替わって高さが変わるので、章の位置を測り直す
+  if(window.ResizeObserver){ new ResizeObserver(measureMarks).observe(document.body); }
+  const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(document.fonts && document.fonts.ready){ document.fonts.ready.then(measureMarks); }
+
+  const clamp01 = v => Math.max(0, Math.min(1, v));
+  const smooth = v => { v = clamp01(v); return v*v*(3-2*v); };
+  const lerp = (a,b,t) => a + (b-a)*t;
+  function mixPose(a, b, t){
+    const o = {};
+    for(const k in a) o[k] = lerp(a[k], b[k], t);
+    return o;
+  }
+
+  // 画面上のピクセル位置 → 3D空間（z=0の面）の座標へ
+  function viewSize(){
+    const H = 2 * Math.tan(THREE.MathUtils.degToRad(camera.fov/2)) * camera.position.z;
+    return { H, W: H * camera.aspect };
+  }
+  const STICK_LEN = 7; // 本体6.2＋先端
+  const PI2 = Math.PI/2;
+  const originEyebrow = document.querySelector('#sec01 .eyebrow');
+  const ctaLines = Array.from(document.querySelectorAll('#sec03 .kline'));
+  const meaningsEl = document.querySelector('.meanings');
+  const meaningItems = Array.from(document.querySelectorAll('.meaning-item'));
+  const sec01El = document.getElementById('sec01');
+  const originDwell = document.querySelector('.origin-dwell');
+  const noClip = !(window.CSS && CSS.supports('overflow-x', 'clip'));
+  if(reduceMotion) originDwell.style.display = 'none';
+  function poses(s){
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const { H, W } = viewSize();
+    const px = W / vw;
+    const wx = p => -W/2 + p*px; // 画面の左からのpx → 3D
+    const wy = p => H/2 - p*px;  // 画面の上からのpx → 3D
+    const base = { sw1:0, sw2:0, z:0, ry:0, rx:0.12 };
+    // HERO：元のTOPと同じ動き（上下に分かれながら奥へ）。HERO自体が上へ流れた分（ht）も足して、HEROの箸とぴったり重ねる
+    const hp = Math.min(1, s / (vh*0.8));
+    const ht = -heroEl.getBoundingClientRect().top * px;
+    const hero = { x1:0, y1:0.32 + hp*0.9 + ht, r1:PI2, sw1:stick1.rotation.y, x2:0, y2:-0.32 - hp*0.9 + ht, r2:PI2, sw2:stick2.rotation.y, sc:1, z:-2*hp, ry:-0.3, rx:0.18 };
+
+    // ORIGIN：「( ORIGIN )」の上の帯で、端 → 箸 → 橋 と形を変える（TOPの「はしから、はしまで、はしで、はしをかける」と同じ順。「つなぐ」で終える）
+    // どれも横向きのまま。向きを返す（裏返す）動きは入れない：画面の中で回すと途中で縦に立ち（立て箸）、奥行きで回すと途中の形が崩れるため
+    const by = wy(Math.max(96, originEyebrow.getBoundingClientRect().top - 44));
+    const L = Math.min(vw * 0.44, 300);
+    const sc = (L * px) / STICK_LEN;
+    const g = 0.22 * sc;
+    // 端：こちらと、むこう。2本が画面の左右の端へ分かれ、半分ずつ画面の外へ
+    const ends = Object.assign({}, base, { x1:wx(0), y1:by, r1:PI2, x2:wx(vw), y2:by, r2:PI2, sc });
+    // 箸：一膳そろって置かれる
+    const hashi = Object.assign({}, base, { x1:0, y1:by + g, r1:PI2, x2:0, y2:by - g, r2:PI2, sc });
+    // 橋：2本が端と端でつながり、ゆるいアーチの一本の橋に（左の箸は右端を、右の箸は左端を少し持ち上げる）
+    const half = L * 0.49 * px, arch = 0.09;
+    const bridge = Object.assign({}, base, { x1:-half, y1:by, r1:PI2 + arch, x2:half, y2:by, r2:PI2 - arch, sc });
+
+    // 四つの物語：一膳にそろって、見出しの上に（メニューボタンの下端78pxに触れない高さ。位置は動かさない）
+    const L2 = Math.min(vw * 0.84, 560);
+    const sc2 = (L2 * px) / STICK_LEN, g2 = 0.26 * sc2, y2 = wy(112);
+    const pair = Object.assign({}, base, { x1:0, y1:y2 + g2, r1:PI2, x2:0, y2:y2 - g2, r2:PI2, sc:sc2 });
+
+    // CONTACT：左右から寄ってきて、「BUILD YOUR」と「OWN STORY.」の行のあいだに一膳でそろう（TOPと同じ構図で締める。✕に交差させない）
+    const l1 = ctaLines[0].getBoundingClientRect(), l2 = ctaLines[1].getBoundingClientRect();
+    const cy = wy((l1.bottom + l2.top) / 2);
+    const Lc = Math.min(vw * 0.8, 560);
+    const scC = (Lc * px) / STICK_LEN, gC = 0.24 * scC;
+    const ichizen = Object.assign({}, base, { x1:0, y1:cy + gC, r1:PI2, x2:0, y2:cy - gC, r2:PI2, sc:scC });
+    const apart = Object.assign({}, ichizen, { x1:-W*0.34, x2:W*0.34 });
+    return { hero, ends, hashi, bridge, pair, apart, ichizen };
+  }
+
+  let lastKey = '';
+  function animateJourney(){
+    requestAnimationFrame(animateJourney);
+    const s = window.scrollY, vh = window.innerHeight;
+    // CSSのstickyが使えない古いブラウザだけ、JSでORIGINを止める（ずらす）
+    if(noClip){
+      const pin = Math.max(0, Math.min(originDwell.offsetHeight, s - markTops[1]));
+      sec01El.style.transform = pin ? `translateY(${pin}px)` : '';
+    }
+    const [ , k1, k2, k3 ] = markTops;
+    const dwell = originDwell.offsetHeight;
+    window.originPinned = dwell > 0 && s > k1 - vh*0.2 && s < k1 + dwell;
+    if(window.originPinned && window.originShowFirst) window.originShowFirst();
+    // スクロールもマウスも止まっていれば、計算も描画もしない（軽くするため）
+    const key = s + '|' + markTops.join(',') + '|' + mouseX.toFixed(3) + '|' + mouseY.toFixed(3) + '|' + window.innerWidth + '|' + vh;
+    if(key === lastKey && s > vh) return;
+    lastKey = key;
+
+    const P = poses(s);
+    const kCover = k2 - vh*0.8;                        // 四つの物語が下から上がり始める所
+    const ctaStart = Math.max(k3 - vh, k2 + vh*0.3);   // CONTACTへ向かい始める所（02のカードで箸が消えきってから）
+    // ORIGINの区切り（それぞれ0.5画面分かけて、ゆったり形を変える）：端に着く → 箸へ → 箸に着く → 橋へ → 橋に着く
+    const T = [vh*0.5, k1 + vh*0.1, k1 + vh*0.35, k1 + vh*0.85, k1 + vh*1.1, k1 + vh*1.6];
+    const ORDER = [2, 0, 1]; // 光らせる字：端（3行目）→ 箸（1行目）→ 橋（2行目）
+    let pose, step = -1;
+    if(s < T[2]){
+      pose = mixPose(P.hero, P.ends, smooth((s - T[0]) / (T[1] - T[0])));
+      if(s > T[1] - vh*0.2) step = 0;
+    } else if(s < T[4]){
+      pose = mixPose(P.ends, P.hashi, smooth((s - T[2]) / (T[3] - T[2])));
+      step = s < (T[2] + T[3]) / 2 ? 0 : 1;
+    } else if(s < kCover){
+      pose = mixPose(P.hashi, P.bridge, smooth((s - T[4]) / (T[5] - T[4])));
+      step = s < (T[4] + T[5]) / 2 ? 1 : 2;
+    } else if(s < ctaStart){
+      pose = mixPose(P.bridge, P.pair, smooth((s - kCover) / (vh*0.8)));
+    } else {
+      const t = (s - ctaStart) / Math.max(1, k3 - ctaStart + vh*0.05);
+      pose = mixPose(P.apart, P.ichizen, smooth((t - 0.2) / 0.8));
+    }
+    // 「箸・橋・端」の、いま形にしている字だけを光らせる
+    const lit = step >= 0 && s < kCover + vh*0.3 ? ORDER[step] : -1;
+    meaningsEl.classList.toggle('has-lit', lit >= 0 && !reduceMotion);
+    meaningItems.forEach((m, i) => m.classList.toggle('is-lit', i === lit));
+
+    // HEROの箸とクロスフェードで入れ替わる。四つの物語のカードを読む間は消え、CONTACTでまた現れる
+    const fadeIn = smooth((s - vh*0.42) / (vh*0.3));
+    const mid = s < ctaStart ? 1 - smooth((s - (k2 + vh*0.08)) / (vh*0.2)) : smooth((s - ctaStart) / (vh*0.25));
+    const op = reduceMotion ? 0 : fadeIn * mid;
+    window.jOp = op;
+    jCanvas.style.opacity = op.toFixed(3);
+    if(s < vh * 1.2) canvas.style.opacity = reduceMotion ? '' : (1 - fadeIn).toFixed(3);
+    if(op < 0.01) return;
+
+    jStick1.position.set(pose.x1, pose.y1, 0); jStick1.rotation.set(0, pose.sw1, pose.r1); jStick1.scale.setScalar(pose.sc);
+    jStick2.position.set(pose.x2, pose.y2, 0); jStick2.rotation.set(0, pose.sw2, pose.r2); jStick2.scale.setScalar(pose.sc);
+    jGroup.position.z = pose.z;
+    jGroup.rotation.x = pose.rx + mouseY*0.12; // HEROと同じ効き方にそろえる
+    jGroup.rotation.y = pose.ry;
+    jRenderer.render(jScene, camera);
+  }
+  animateJourney();
+
+  // ── 章の目次（IVRESS参考）＋ 上端の進み具合 ──
+  (function(){
+    const idx = document.getElementById('chapterIndex');
+    const items = Array.from(idx.querySelectorAll('.ci-item'));
+    const now = document.getElementById('ciNow');
+    const bar = document.getElementById('ciProgress');
+    const labels = items.map(b => ({ num: b.querySelector('.ci-num').textContent, label: b.textContent.replace(/^\d+/, '').trim() }));
+    items.forEach(b => b.addEventListener('click', ()=>{
+      const i = Number(b.dataset.go);
+      window.scrollTo({ top: i === 0 ? 0 : markTops[i], behavior: reduceMotion ? 'auto' : 'smooth' });
+      idx.classList.remove('is-open');
+    }));
+    now.addEventListener('click', (e)=>{ e.stopPropagation(); idx.classList.toggle('is-open'); });
+    document.addEventListener('click', (e)=>{ if(!idx.contains(e.target)) idx.classList.remove('is-open'); });
+    let last = -1;
+    function update(){
+      const s = window.scrollY, vh = window.innerHeight;
+      const max = document.documentElement.scrollHeight - vh;
+      bar.style.transform = `scaleX(${max > 0 ? clamp01(s / max) : 0})`;
+      const shown = s > vh * 0.35;
+      idx.classList.toggle('is-shown', shown);
+      now.classList.toggle('is-shown', shown);
+      let cur = 0;
+      for(let i=1;i<markTops.length;i++){ if(s + vh*0.5 >= markTops[i]) cur = i; }
+      if(cur !== last){
+        items.forEach((b,i)=>b.classList.toggle('is-current', i === cur));
+        now.querySelector('.ci-num').textContent = labels[cur].num;
+        now.querySelector('.ci-label').textContent = labels[cur].label;
+        last = cur;
+      }
+    }
+    update();
+    window.addEventListener('scroll', update, {passive:true});
+    window.addEventListener('resize', update);
+  })();
 
   // サイト内共通ナビゲーション
   const navToggle = document.getElementById('navToggle');
