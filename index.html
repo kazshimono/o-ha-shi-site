@@ -238,29 +238,13 @@
   .nav-close{ position:absolute; top:26px; right:26px; z-index:2; width:52px; height:52px; border-radius:50%; border:1px solid rgba(227,176,75,.55); background:transparent; color:var(--gold2); font-size:16px; cursor:pointer; }
 
   /* 2026-09-21 試作：Diamond Journeyを参考に、TOPの箸がスクロールに合わせて各章へついてくる。
-     箸（HERO）→ 端（ORIGINで左右の両端に立つ）→ 橋（四つの物語の上に架かる）→ CONTACTで交差から一膳へ */
+     箸（HERO）→ 01で左右の端に縦に立つ → 四つの物語の上で一膳に → CONTACTで左右から寄って一膳にそろう */
   #canvas3d-journey{ position:fixed; inset:0; width:100%; height:100%; z-index:5; pointer-events:none; opacity:0; }
   .sec-mark{ height:0; }
-  /* ORIGINを画面に止めたまま、箸が「端→箸→橋」と形を変える。止めている間のスクロール分が .origin-dwell */
   .origin-pin{ position:relative; }
-  .origin-pin > #sec01{ position:sticky; top:0; }
-  .origin-dwell{ height:200vh; }
-  @media(max-width:420px){
-    /* 小さいスマホでも、止めている間にORIGINの中身が画面の下で切れないように詰める */
-    .origin-pin .meaning-item{ padding:10px 0; }
-    .origin-pin .origin-big{ margin-top:28px; }
-    .origin-pin .origin-panel-text{ font-size:22px; }
-  }
   @media(prefers-reduced-motion:reduce){
     *, *::before, *::after{ animation:none !important; transition-duration:.01s !important; }
-    .origin-dwell{ display:none; }
   }
-  /* 箸が形を変えるのに合わせて、「箸・橋・端」のいまの字だけを光らせる */
-  .meanings.has-lit .meaning-item{ opacity:.32; transition:opacity .5s ease, transform .7s ease; transition-delay:0s; }
-  .meanings.has-lit .meaning-item.is-lit{ opacity:1; }
-  .meaning-kanji{ display:inline-block; transition:color .5s ease, transform .5s cubic-bezier(.16,1,.3,1); }
-  .meanings.has-lit .meaning-item.is-lit .meaning-kanji{ color:#a5813a; transform:scale(1.18); }
-  .meanings.has-lit .meaning-item.is-lit .meaning-text{ color:#4a453d; }
 
   /* 章の目次（IVRESS参考）：PCは左端に縦の一覧、スマホは左下の「いまの章」をタップで一覧 */
   .ci-progress{ position:fixed; top:0; left:0; width:100%; height:2px; z-index:45; transform-origin:left; transform:scaleX(0); background:rgba(245,242,234,.5); pointer-events:none; }
@@ -381,8 +365,6 @@
   </div>
 </section>
 
-<!-- ORIGINを画面に止めたまま、箸が「箸→橋→端」と形を変える間のスクロール分 -->
-<div class="origin-dwell" aria-hidden="true"></div>
 </div>
 <div class="sec-mark" id="mark2"></div>
 <section id="sec02">
@@ -753,10 +735,7 @@
     }
     apply();
     window.addEventListener('resize', apply);
-    // 箸が形を変えている間（ORIGINを止めている間）は切り替えない。視線を箸と「箸・橋・端」に集めるため
-    function next(){ if(window.originPinned) return; active = (active + 1) % panels.length; apply(); }
-    // 止めている間は、箸の動き（端→橋）と同じことを言っている1枚目に戻しておく
-    window.originShowFirst = () => { if(active !== 0){ active = 0; apply(); } };
+    function next(){ active = (active + 1) % panels.length; apply(); }
     let timer = setInterval(next, 5000);
     card.addEventListener('mouseenter', ()=>{ clearInterval(timer); });
     card.addEventListener('mouseleave', ()=>{ timer = setInterval(next, 5000); });
@@ -837,9 +816,6 @@
   const meaningsEl = document.querySelector('.meanings');
   const meaningItems = Array.from(document.querySelectorAll('.meaning-item'));
   const sec01El = document.getElementById('sec01');
-  const originDwell = document.querySelector('.origin-dwell');
-  const noClip = !(window.CSS && CSS.supports('overflow-x', 'clip'));
-  if(reduceMotion) originDwell.style.display = 'none';
   function poses(s){
     const vw = window.innerWidth, vh = window.innerHeight;
     const { H, W } = viewSize();
@@ -866,6 +842,12 @@
     const half = L * 0.49 * px, arch = 0.09;
     const bridge = Object.assign({}, base, { x1:-half, y1:by, r1:PI2 + arch, x2:half, y2:by, r2:PI2 - arch, sc });
 
+    // 01（ORIGIN）：以前の形。2本が「箸・橋・端」の一覧の左右に、縦に立つ（Kazさんの指定、2026-09-22）
+    // スマホは画面の端ぎりぎり、PCは左の目次パネル（右端200px）より内側。奥へ傾けると内側へ倒れて文章にかかるので、まっすぐ立てる
+    const edgePx = vw > 820 ? Math.min(vw/2 - 240, 380) : vw/2 - 18;
+    const scEdge = (H * 0.42) / STICK_LEN;
+    const edge = Object.assign({}, base, { x1:-edgePx*px, y1:H*0.12, r1:0, x2:edgePx*px, y2:H*0.12, r2:0, sc:scEdge, rx:0 });
+
     // 四つの物語：一膳にそろって、見出しの上に（メニューボタンの下端78pxに触れない高さ。位置は動かさない）
     const L2 = Math.min(vw * 0.84, 560);
     const sc2 = (L2 * px) / STICK_LEN, g2 = 0.26 * sc2, y2 = wy(112);
@@ -878,58 +860,53 @@
     const scC = (Lc * px) / STICK_LEN, gC = 0.24 * scC;
     const ichizen = Object.assign({}, base, { x1:0, y1:cy + gC, r1:PI2, x2:0, y2:cy - gC, r2:PI2, sc:scC });
     const apart = Object.assign({}, ichizen, { x1:-W*0.34, x2:W*0.34 });
-    return { hero, ends, hashi, bridge, pair, apart, ichizen };
+    return { hero, ends, hashi, bridge, edge, pair, apart, ichizen };
   }
 
-  let lastKey = '';
+  let lastKey = '', settled = false;
+  // 箸をなめらかに：スクロール位置が決める形へ「すっと追いつく」ように少しずつ近づける（指ではじいても飛ばない）
+  let cur = null, curOp = 0, lastT = performance.now();
+  const EASE = 6; // 大きいほど早く追いつく。1秒で約99%追いつく値
   function animateJourney(){
     requestAnimationFrame(animateJourney);
     const s = window.scrollY, vh = window.innerHeight;
-    // CSSのstickyが使えない古いブラウザだけ、JSでORIGINを止める（ずらす）
-    if(noClip){
-      const pin = Math.max(0, Math.min(originDwell.offsetHeight, s - markTops[1]));
-      sec01El.style.transform = pin ? `translateY(${pin}px)` : '';
-    }
     const [ , k1, k2, k3 ] = markTops;
-    const dwell = originDwell.offsetHeight;
-    window.originPinned = dwell > 0 && s > k1 - vh*0.2 && s < k1 + dwell;
-    if(window.originPinned && window.originShowFirst) window.originShowFirst();
     // スクロールもマウスも止まっていれば、計算も描画もしない（軽くするため）
     const key = s + '|' + markTops.join(',') + '|' + mouseX.toFixed(3) + '|' + mouseY.toFixed(3) + '|' + window.innerWidth + '|' + vh;
-    if(key === lastKey && s > vh) return;
+    if(key === lastKey && settled && s > vh) return;
     lastKey = key;
+    const now = performance.now();
+    const dt = Math.min(0.1, (now - lastT) / 1000);
+    lastT = now;
 
     const P = poses(s);
     const kCover = k2 - vh*0.8;                        // 四つの物語が下から上がり始める所
     const ctaStart = Math.max(k3 - vh, k2 + vh*0.3);   // CONTACTへ向かい始める所（02のカードで箸が消えきってから）
-    // ORIGINの区切り（それぞれ0.5画面分かけて、ゆったり形を変える）：端に着く → 箸へ → 箸に着く → 橋へ → 橋に着く
-    const T = [vh*0.5, k1 + vh*0.1, k1 + vh*0.35, k1 + vh*0.85, k1 + vh*1.1, k1 + vh*1.6];
-    const ORDER = [2, 0, 1]; // 光らせる字：端（3行目）→ 箸（1行目）→ 橋（2行目）
-    let pose, step = -1;
-    if(s < T[2]){
-      pose = mixPose(P.hero, P.ends, smooth((s - T[0]) / (T[1] - T[0])));
-      if(s > T[1] - vh*0.2) step = 0;
-    } else if(s < T[4]){
-      pose = mixPose(P.ends, P.hashi, smooth((s - T[2]) / (T[3] - T[2])));
-      step = s < (T[2] + T[3]) / 2 ? 0 : 1;
-    } else if(s < kCover){
-      pose = mixPose(P.hashi, P.bridge, smooth((s - T[4]) / (T[5] - T[4])));
-      step = s < (T[4] + T[5]) / 2 ? 1 : 2;
+    // TOPの箸 → 01で左右の端に縦に立つ → 四つの物語の上で一膳に → カードで消える → CONTACTで左右から寄って一膳に
+    let pose;
+    if(s < kCover){
+      // 01が画面を覆いきる少し前に立ち終える（途中で止まると斜めに傾いて見えるため）
+      pose = mixPose(P.hero, P.edge, smooth((s - vh*0.5) / (k1 - vh*0.1 - vh*0.5)));
     } else if(s < ctaStart){
-      pose = mixPose(P.bridge, P.pair, smooth((s - kCover) / (vh*0.8)));
+      pose = mixPose(P.edge, P.pair, smooth((s - kCover) / (vh*0.8)));
     } else {
       const t = (s - ctaStart) / Math.max(1, k3 - ctaStart + vh*0.05);
       pose = mixPose(P.apart, P.ichizen, smooth((t - 0.2) / 0.8));
     }
-    // 「箸・橋・端」の、いま形にしている字だけを光らせる
-    const lit = step >= 0 && s < kCover + vh*0.3 ? ORDER[step] : -1;
-    meaningsEl.classList.toggle('has-lit', lit >= 0 && !reduceMotion);
-    meaningItems.forEach((m, i) => m.classList.toggle('is-lit', i === lit));
 
     // HEROの箸とクロスフェードで入れ替わる。四つの物語のカードを読む間は消え、CONTACTでまた現れる
     const fadeIn = smooth((s - vh*0.42) / (vh*0.3));
     const mid = s < ctaStart ? 1 - smooth((s - (k2 + vh*0.08)) / (vh*0.2)) : smooth((s - ctaStart) / (vh*0.25));
-    const op = reduceMotion ? 0 : fadeIn * mid;
+    const target = reduceMotion ? 0 : fadeIn * mid;
+    // HEROの箸と入れ替わる間（0.8画面分まで）は追いつき処理をせず、HEROの箸にぴったり重ねる
+    const a = (s < vh*0.8 || !cur) ? 1 : 1 - Math.exp(-dt * EASE);
+    if(!cur) cur = Object.assign({}, pose);
+    let diff = 0;
+    for(const k in pose){ const d = pose[k] - cur[k]; cur[k] += d * a; diff = Math.max(diff, Math.abs(d)); }
+    curOp += (target - curOp) * a;
+    settled = diff < 0.0005 && Math.abs(target - curOp) < 0.002;
+    pose = cur;
+    const op = curOp;
     window.jOp = op;
     jCanvas.style.opacity = op.toFixed(3);
     if(s < vh * 1.2) canvas.style.opacity = reduceMotion ? '' : (1 - fadeIn).toFixed(3);
