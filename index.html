@@ -195,6 +195,7 @@
   .origin-tags span{ font-size:11.5px; letter-spacing:.05em; padding:8px 16px; border:1px solid rgba(165,129,58,.55); border-radius:20px; color:#7a5a22; background:rgba(227,176,75,.1); }
 
   .cta{ position:relative; text-align:center; background:linear-gradient(160deg,#0b0d10,#1a1408); overflow:hidden; }
+  #canvas3d-cta{ position:absolute; inset:0; z-index:0; opacity:.55; }
   .cta .section-content{ position:relative; z-index:1; }
   .cta .eyebrow{ opacity:0; transform:translateX(-32px); transition:opacity .8s ease, transform .8s ease; }
   .cta .big-line{ opacity:0; transform:translateX(56px); transition:opacity .9s ease .12s, transform .9s ease .12s; }
@@ -464,6 +465,7 @@
 <div class="sec-mark" id="mark3"></div>
 <section class="cta" id="sec03">
   <div class="num-bg" data-parallax>03</div>
+  <canvas id="canvas3d-cta"></canvas>
   <div class="section-content">
     <div class="eyebrow">( NEXT )</div>
     <p class="big-line kinetic" style="margin:0 auto;">
@@ -741,7 +743,98 @@
     card.addEventListener('mouseleave', ()=>{ timer = setInterval(next, 5000); });
   })();
 
-  // CONTACTの箸は、上から続いてきた同じ箸（画面固定の描画面）が受け持つ。以前のCONTACT専用の3D描画はやめた（2026-09-21）
+  // 03（CONTACT）は以前の形に戻した（Kazさんの指定、2026-09-22）：専用の箸が下からせり上がり、✕から一膳へ閉じていく。上から続く箸は02のカードで消える
+  // second 3D scene for CTA section (crossed chopsticks)
+  const ctaCanvas = document.getElementById('canvas3d-cta');
+  const ctaRenderer = new THREE.WebGLRenderer({ canvas: ctaCanvas, antialias:true, alpha:true });
+  ctaRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  const ctaScene = new THREE.Scene();
+  const ctaCamera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+  ctaCamera.position.set(0, 0, 9);
+
+  function resizeCta(){
+    const sec = document.getElementById('sec03');
+    const w = sec.clientWidth, h = sec.clientHeight;
+    ctaRenderer.setSize(w, h);
+    const aspect = w/h;
+    ctaCamera.aspect = aspect;
+    // HEROと同じ考え方：画角も広げつつ、はみ出さない範囲でお箸をできるだけ大きく保つ
+    const ctaFov = aspect >= 1 ? 45 : 45 + (1 - aspect) * 35;
+    ctaCamera.fov = ctaFov;
+    const ctaHalfTan = Math.tan(THREE.MathUtils.degToRad(ctaFov / 2));
+    ctaCamera.position.z = Math.max(9, 4.2 / (ctaHalfTan * aspect));
+    ctaCamera.updateProjectionMatrix();
+  }
+  resizeCta();
+  window.addEventListener('resize', resizeCta);
+  window.addEventListener('load', resizeCta);
+
+  const ctaGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map:glowTex, transparent:true, opacity:.4, blending:THREE.AdditiveBlending }));
+  ctaGlow.scale.set(8,8,1);
+  ctaGlow.position.set(0,0,-2);
+  ctaScene.add(ctaGlow);
+
+  const ctaGroup = new THREE.Group();
+  ctaScene.add(ctaGroup);
+  const ctaMatA = new THREE.MeshPhysicalMaterial({ color:0xe3b04b, metalness:0.9, roughness:0.22, clearcoat:1, clearcoatRoughness:0.15 });
+  const ctaMatB = new THREE.MeshPhysicalMaterial({ color:0xd9a344, metalness:0.88, roughness:0.3, clearcoat:0.8, clearcoatRoughness:0.2 });
+  const ctaStick1 = new THREE.Mesh(stickGeo, ctaMatA);
+  ctaStick1.rotation.z = Math.PI/4;
+  ctaGroup.add(ctaStick1);
+  const ctaStick2 = new THREE.Mesh(stickGeo, ctaMatB);
+  ctaStick2.rotation.z = -Math.PI/4;
+  ctaGroup.add(ctaStick2);
+
+  const ctaKey = new THREE.PointLight(0xffe3a8, 3.4, 30);
+  ctaKey.position.set(4, 3, 6);
+  ctaScene.add(ctaKey);
+  const ctaRim = new THREE.PointLight(0x88aaff, 1.3, 30);
+  ctaRim.position.set(-5, -2, -4);
+  ctaScene.add(ctaRim);
+  const ctaFill = new THREE.PointLight(0xffb877, 1.2, 30);
+  ctaFill.position.set(-2, -3, 4);
+  ctaScene.add(ctaFill);
+  ctaScene.add(new THREE.AmbientLight(0x404040, 1.1));
+
+  let ctaVisible = false;
+  const sec03El = document.getElementById('sec03');
+  function checkCtaVisible(){
+    const r = sec03El.getBoundingClientRect();
+    ctaVisible = r.bottom > 0 && r.top < window.innerHeight;
+  }
+  window.addEventListener('scroll', checkCtaVisible, {passive:true});
+  window.addEventListener('resize', checkCtaVisible);
+  checkCtaVisible();
+
+  let ctaScrollProgress = 0;
+  window.addEventListener('scroll', ()=>{
+    const rect = sec03El.getBoundingClientRect();
+    ctaScrollProgress = Math.max(0, Math.min(1, (window.innerHeight - rect.top) / (window.innerHeight * 0.9)));
+  }, {passive:true});
+
+  function animateCta(){
+    requestAnimationFrame(animateCta);
+    if(!ctaVisible) return;
+    const ctaT = clock.getElapsedTime();
+    const ctaSpeed = 0.0005;
+    const ctaSpinDir = Math.floor(ctaT / REVERSAL_CYCLE_SEC) % 2 === 0 ? 1 : -1;
+    const ctaStep = ctaSpeed * ctaSpinDir;
+    ctaStick1.rotation.y += ctaStep;
+    ctaStick2.rotation.y -= ctaStep;
+    ctaGroup.rotation.x += 0.0012;
+    // スクロールで進むほど交差(✕)から寄り添う1膳へ変化＝「物語が形になる」演出
+    const crossAngle = (Math.PI/4) * (1 - ctaScrollProgress * 0.8);
+    ctaStick1.rotation.z = crossAngle;
+    ctaStick2.rotation.z = -crossAngle;
+    ctaStick1.position.y = 0.05 + ctaScrollProgress * 0.22;
+    ctaStick2.position.y = -0.05 - ctaScrollProgress * 0.22;
+    // 画面の下からお箸がせり上がってくる（Jesko Jetsの「飛行機が下からせり上がる」演出を参照）
+    ctaGroup.position.y = -4.2 + ctaScrollProgress * 4.2;
+    const ctaScale = 0.7 + ctaScrollProgress * 0.3;
+    ctaGroup.scale.set(ctaScale, ctaScale, ctaScale);
+    ctaRenderer.render(ctaScene, ctaCamera);
+  }
+  animateCta();
 
   // cursor-follow "SCROLL" tag over the hero (IVRESSの「TAP TO BEGIN」の技術を参照)
   const cursorTag = document.getElementById('cursorTag');
@@ -896,7 +989,7 @@
 
     // HEROの箸とクロスフェードで入れ替わる。四つの物語のカードを読む間は消え、CONTACTでまた現れる
     const fadeIn = smooth((s - vh*0.42) / (vh*0.3));
-    const mid = s < ctaStart ? 1 - smooth((s - (k2 + vh*0.08)) / (vh*0.2)) : smooth((s - ctaStart) / (vh*0.25));
+    const mid = 1 - smooth((s - (k2 + vh*0.08)) / (vh*0.2)); // 02のカードで消え、03では出さない（03は専用の箸）
     const target = reduceMotion ? 0 : fadeIn * mid;
     // HEROの箸と入れ替わる間（0.8画面分まで）は追いつき処理をせず、HEROの箸にぴったり重ねる
     const a = (s < vh*0.8 || !cur) ? 1 : 1 - Math.exp(-dt * EASE);
@@ -955,6 +1048,92 @@
     update();
     window.addEventListener('scroll', update, {passive:true});
     window.addEventListener('resize', update);
+  })();
+
+  // ── 2026-09-22 箸の3案（金の箸が「中国のお箸っぽい」との声を受けて） ──
+  // 日本の箸らしく、どの案も先を細く尖らせる（中国の箸は太く長く、先が丸いまま）。
+  // A 黒の漆塗り＋金の細い帯 ／ B 白木（木目の見える素の木） ／ C 朱塗り
+  (function(){
+    const L = 7; // 箸の長さ（元の本体6.2＋先端と同じ長さにそろえる）
+    function taperGeo(both){
+      // 回転体で作る：y=-L/2（持つ側）→ y=+L/2（食べる側・先端）
+      const pts = [];
+      const N = 40;
+      for(let i=0;i<=N;i++){
+        const t = i/N, y = -L/2 + L*t;
+        let r;
+        if(both){ r = 0.028 + 0.085 * Math.sin(Math.PI * t); }        // 両端が細く、真ん中が太い
+        else    { r = 0.118 - 0.09 * Math.pow(t, 1.15); }              // 持つ側が太く、先へ細く尖る
+        pts.push(new THREE.Vector2(r, y));
+      }
+      pts.unshift(new THREE.Vector2(0.0001, -L/2));
+      pts.push(new THREE.Vector2(0.0001, L/2));
+      return new THREE.LatheGeometry(pts, 40);
+    }
+    function woodTexture(){
+      const c = document.createElement('canvas'); c.width = 256; c.height = 8;
+      const x = c.getContext('2d');
+      x.fillStyle = '#e9d2a4'; x.fillRect(0,0,256,8);
+      for(let i=0;i<60;i++){
+        const px = Math.random()*256, w = 0.6 + Math.random()*1.8;
+        x.fillStyle = `rgba(${150+Math.random()*40|0},${105+Math.random()*30|0},${55+Math.random()*25|0},${0.18+Math.random()*0.28})`;
+        x.fillRect(px, 0, w, 8);
+      }
+      const t = new THREE.CanvasTexture(c);
+      t.wrapS = t.wrapT = THREE.RepeatWrapping;
+      return t;
+    }
+    const woodTex = woodTexture();
+    const geoTaper = taperGeo(false), geoBoth = taperGeo(true);
+    const band = new THREE.CylinderGeometry(0.113, 0.113, 0.14, 40);
+    // 描画面ごとに材質を作る（使い回すと壊れることがあるため）
+    function mats(style){
+      if(style === 'a' || style === 'a2') return {
+        body: new THREE.MeshPhysicalMaterial({ color:0x0c0a09, metalness:0.15, roughness:0.16, clearcoat:1, clearcoatRoughness:0.06 }),
+        band: new THREE.MeshPhysicalMaterial({ color:0xe3b04b, metalness:0.9, roughness:0.22, clearcoat:1 })
+      };
+      if(style === 'c') return {
+        body: new THREE.MeshPhysicalMaterial({ color:0xb8281a, metalness:0.08, roughness:0.2, clearcoat:1, clearcoatRoughness:0.08 })
+      };
+      return { body: new THREE.MeshPhysicalMaterial({ color:0xcfc3ae, map:woodTex, metalness:0, roughness:0.8, clearcoat:0 }) }; // 強い光で白く飛ばないよう、少し落ち着いた木の色に
+    }
+    function build(group, style){
+      group.clear();
+      const m = mats(style);
+      // B も普通の箸の形（持つ側が太く、先へ細く）。両端が細い祝い箸の形は「箸っぽくない」とKazさんの指摘（2026-09-22）
+      group.add(new THREE.Mesh(geoTaper, m.body));
+      if(style === 'a' || style === 'a2'){ const r = new THREE.Mesh(band, m.band); r.position.y = -L/2 + 1.25; group.add(r); }
+      // A＋：黒い箸が暗い背景に沈まないよう、ふちにうっすら光の輪郭をつける（少し太い影を裏側に置き、加算で光らせる）
+      if(style === 'a2'){
+        const edge = new THREE.Mesh(geoTaper, new THREE.MeshBasicMaterial({ color:0xb89a62, transparent:true, opacity:.28, side:THREE.BackSide, blending:THREE.AdditiveBlending, depthWrite:false }));
+        edge.scale.set(1.32, 1.01, 1.32);
+        group.add(edge);
+      }
+    }
+    // CONTACTの箸（1本の部品だけの作り）もグループに入れ替える
+    function rebuildCta(mesh, style){
+      mesh.geometry = geoTaper;
+      mesh.material = mats(style).body;
+    }
+    function apply(style){
+      [stick1, stick2, jStick1, jStick2].forEach(g => build(g, style));
+      rebuildCta(ctaStick1, style); rebuildCta(ctaStick2, style);
+      // 白木は、金色がかった照明だと金の箸に見えてしまうので、照明を白に近づける
+      const warm = style !== 'b';
+      // A＋：後ろからの光を白く強くして、箸のふちに細い光の線を出す
+      [rim, jRim, ctaRim].forEach(l => { l.color.set(style === 'a2' ? 0xeef2ff : 0x88aaff); l.intensity = style === 'a2' ? 4.2 : (l === ctaRim ? 1.3 : 1.6); l.position.set(style === 'a2' ? -2 : -5, style === 'a2' ? 4 : -2, style === 'a2' ? -3 : -4); });
+      [key, jKey, ctaKey].forEach(l => l.color.set(warm ? 0xffe3a8 : 0xfff8f0));
+      [fill, jFill, ctaFill].forEach(l => l.color.set(warm ? 0xffb877 : 0xf4efe8));
+      document.querySelectorAll('.hashi-switch button').forEach(b => b.classList.toggle('is-on', b.dataset.style === style));
+      lastKey = ''; settled = false; // 止まっていても描き直す
+      if(!visible){ renderer.render(scene, camera); }
+    }
+    // 本番は A＋（黒漆＋ふち光）に固定（Kazさん決定 2026-09-22）
+    let style = 'a2';
+    document.querySelectorAll('.hashi-switch button').forEach(b => b.addEventListener('click', ()=>{
+      style = b.dataset.style; history.replaceState(null, '', '#' + style); apply(style);
+    }));
+    apply(style);
   })();
 
   // サイト内共通ナビゲーション
