@@ -4,6 +4,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>O-HA-SHI合同会社 | 海外進出支援</title>
+<meta name="description" content="貿易から現地法人の設立、マーケティング・PR、営業まで。海外進出を、実務のハンズオンで一貫して伴走します。">
+<!-- 2026-10-26 LINE・SNSで共有したときの見た目(OGP)・タブのアイコン。httpsが使えるようになったら http:// を https:// に変える -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="O-HA-SHI合同会社">
+<meta property="og:title" content="O-HA-SHI合同会社 | 海外進出支援">
+<meta property="og:description" content="貿易から現地法人の設立、マーケティング・PR、営業まで。海外進出を、実務のハンズオンで一貫して伴走します。">
+<meta property="og:url" content="http://o-ha-shi.com/2026-09-13-ohashi-detail-01-kaigai-shinshutsu.html">
+<meta property="og:image" content="http://o-ha-shi.com/media/ogp.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
@@ -28,6 +42,17 @@
   .detail-title em{ font-style:normal; font-weight:800; font-size:1.08em; color:var(--gold2); }
   .detail-sub{ position:relative; z-index:1; margin-top:30px; font-size:15px; line-height:2.1; color:rgba(245,242,234,.65); max-width:520px; }
 
+  /* 2026-10-26 下層ページを整える（優奈さん）：
+     ・章の数字が画面の左端に貼りついていた → 端から離す
+     ・見出しが語の途中で改行していた（「物/語が」など） → 金色の語はひとかたまりで折り返す
+     ・写真を入れる（SAKE OF PEACEのサイトの写真）。見出しの下に大きく1枚、CASEの上に1枚
+     ・スクロールで出す部分が、画面の下15%に入っても出ず空白に見えていた → 画面に入ったら出す */
+  .num-bg{ left:max(16px, 4vw); }
+  .detail-title em{ display:inline-block; }
+  .detail-photo{ position:relative; max-width:1000px; margin:0 auto; padding:0 6vw; opacity:0; transform:translateY(16px); transition:opacity .9s ease, transform .9s ease; }
+  .detail-photo.is-in{ opacity:1; transform:translateY(0); }
+  .detail-photo img{ display:block; width:100%; height:auto; aspect-ratio:16/9; object-fit:cover; border:1px solid rgba(227,176,75,.35); border-radius:2px; filter:saturate(.9); }
+  .case-photo{ position:relative; display:block; width:100%; height:auto; aspect-ratio:16/9; object-fit:cover; margin-bottom:28px; border-radius:2px; filter:saturate(.9); }
   section.story{ padding:70px 6vw 100px; max-width:760px; margin:0 auto; }
   .story-lead{ font-size:15.5px; line-height:2.1; color:rgba(245,242,234,.75); margin-bottom:64px; text-align:center; max-width:620px; margin-left:auto; margin-right:auto; opacity:0; transform:translateY(16px); transition:opacity .8s ease, transform .8s ease; }
   .story-lead.is-in{ opacity:1; transform:translateY(0); }
@@ -137,6 +162,8 @@
   <p class="detail-sub">貿易から現地法人の設立、マーケティング・PR、営業まで。<br>海外進出を、実務のハンズオンで一貫して伴走する。</p>
 </header>
 
+<figure class="detail-photo"><img src="media/sub/kaigai-hero.webp" alt="夕日に向かって海を進む貨物船" width="1600" height="900" decoding="async"></figure>
+
 <section class="story">
   <p class="story-lead">海外進出は、単発の支援では前に進みません。<br>必要な支援は、進出の段階によって変わり続けるからです。O-HA-SHIは、その変化に合わせて伴走します。</p>
   <div class="story-points">
@@ -163,13 +190,13 @@
   window.scrollTo(0, 0);
   window.addEventListener('pageshow', ()=>{ window.scrollTo(0, 0); });
 
-  const revealTargets = Array.from(document.querySelectorAll('.story-lead, .story-point, .story-case'));
+  const revealTargets = Array.from(document.querySelectorAll('.story-lead, .story-point, .story-case, .detail-photo'));
   function checkReveal(){
     const vh = window.innerHeight;
     revealTargets.forEach(el=>{
       if(el.classList.contains('is-in')) return;
       const r = el.getBoundingClientRect();
-      if(r.top < vh * 0.85 && r.bottom > 0) el.classList.add('is-in');
+      if(r.top < vh && r.bottom > 0) el.classList.add('is-in');
     });
   }
   window.addEventListener('scroll', checkReveal, {passive:true});

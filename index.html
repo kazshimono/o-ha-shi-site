@@ -4,6 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>O-HA-SHI合同会社</title>
+<!-- 2026-10-26 LINE・SNSで共有したときの見た目(OGP)・タブのアイコン。httpsが使えるようになったら http:// を https:// に変える -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="O-HA-SHI合同会社">
+<meta property="og:title" content="O-HA-SHI合同会社">
+<meta property="og:description" content="海外進出支援・越境EC・祭り/フェス企画運営・こども文化体験。O-HA-SHI合同会社は、国と国、文化と文化のあいだに橋をかける会社です。">
+<meta property="og:url" content="http://o-ha-shi.com/">
+<meta property="og:image" content="http://o-ha-shi.com/media/ogp.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<!-- 会社情報をGoogle・AI検索に正しく伝える（サイトに書いてある内容だけ） -->
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Organization", "name": "O-HA-SHI合同会社", "alternateName": "オハシ", "url": "http://o-ha-shi.com/", "email": "o.ha.shi.26.8.18@gmail.com", "foundingDate": "2026-08-18", "identifier": {"@type": "PropertyValue", "propertyID": "法人番号", "value": "2010003052416"}, "address": {"@type": "PostalAddress", "postalCode": "101-0041", "addressCountry": "JP", "addressRegion": "東京都", "addressLocality": "千代田区", "streetAddress": "神田須田町一丁目7番8号 Vort秋葉原IV 2階"}, "description": "海外進出支援・越境EC・祭り／フェス企画運営・こども文化体験。国と国、文化と文化を、橋渡しする会社。"}</script>
 <meta name="description" content="海外進出支援・越境EC・祭り/フェス企画運営・こども文化体験。O-HA-SHI合同会社は、国と国、文化と文化のあいだに橋をかける会社です。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,47 +31,81 @@
   .hero-line, .big-line, .num-bg, .meaning-kanji, .bridge-title, .back-statement{ font-family:"Shippori Mincho",serif; }
   a{color:inherit;text-decoration:none;}
 
-  header.hero{ position:relative; z-index:1; height:100svh; overflow:hidden; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:22px; background:radial-gradient(ellipse at 50% 40%, #14101f 0%, #0a0812 45%, #050506 80%); }
-  #canvas3d{ position:absolute; inset:0; width:100%; height:100%; z-index:1; }
-  /* 宇宙（星空）ではなく平面の世界地図を背景に（海外進出支援・越境ECという事業内容にも合う）。
-     国境線入りの詳細な世界地図（Fritz Lekschas氏のsimple-world-map、CC BY-SA 3.0、ISO 3166-1データ）を
-     日本中心図法（太平洋側を中心に、大西洋のあたりで割り直したもの。ohashi-world-map.svgの
-     viewBoxで実現。詳細はmemory.mdの教訓を参照）に加工して使用。
-     長い試行錯誤の末（2026-09-15〜16）、「画面いっぱいに切り取って見せる」方式
-     （cover／固定%ズーム／position調整）はどれも、隙間・重複・歪み・偏りのどれかが必ず
-     発生することが判明。Kazさんから「日本中心図法の参考画像と全く同じにして」という
-     明確な指示を受け、方針を転換：地図全体を一切欠けさせず必ず表示する
-     background-size:containに変更。これにより複製・歪み・切れ端・偏りは原理的に発生しない。
-     画面の形に応じて生まれる余白（contain特有の左右または上下のレターボックス）は、
-     HERO自体が元々持つ radial-gradient の暗い演出と同じ考え方の「ふわっと光る」
-     ビネット（mask-image、四辺すべてを暗闇に溶け込ませる）で自然に馴染ませている。
-     この方式ならJSでの高さ計算（mask-sizeとbackground-sizeを合わせる処理）も不要になり、
-     実装がシンプルになった */
-  .world-map-bg{
-    position:absolute; inset:0; z-index:0;
-    background-image:url("ohashi-world-map-v2.svg");
-    background-repeat:no-repeat;
-    background-size:contain;
-    background-position:center;
-    -webkit-mask-image:radial-gradient(ellipse 75% 70% at 50% 50%, white 0%, white 60%, transparent 100%);
-    mask-image:radial-gradient(ellipse 75% 70% at 50% 50%, white 0%, white 60%, transparent 100%);
-  }
-  .hero-type{ position:relative; z-index:3; text-align:center; pointer-events:none; mix-blend-mode:difference; animation:heroFloat 6s ease-in-out 2.6s infinite; }
-  .hero-line{ display:block; font-weight:500; letter-spacing:.04em; line-height:1.4; font-size:clamp(24px,6.4vw,58px); overflow:hidden; white-space:nowrap; }
-  .hero-line span{ display:inline-block; }
-  .hero-line .char{ display:inline-block; transform:translateY(45%); opacity:0; animation:riseIn 1.6s ease-out forwards; animation-delay:calc(var(--line-delay,0s) + var(--ci,0) * .035s); }
-  .hero-line:nth-child(1) .char{ --line-delay:.2s; }
-  .hero-line:nth-child(2) .char{ --line-delay:.5s; }
-  .hero-line:nth-child(3) .char{ --line-delay:.8s; }
-  .hero-line:nth-child(4) .char{ --line-delay:1.1s; color:var(--gold2); }
-  @keyframes riseIn{ to{ transform:translateY(0); opacity:1; } }
-  /* 文字が浮かんでいるようにゆったり上下する常時アニメーション（「文章に動きが欲しい」の要望） */
-  @keyframes heroFloat{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-10px); } }
-  .hero-eyebrow{ position:relative; z-index:3; font-size:11px; letter-spacing:.4em; color:var(--gold); opacity:0; animation:fadeIn 1s ease .9s forwards; }
-  /* HEROの世界観を壊さない範囲で、何の会社かだけ一行で伝える小さな説明 */
-  .hero-tagline{ position:relative; z-index:3; font-size:12px; letter-spacing:.08em; color:rgba(245,242,234,.55); opacity:0; animation:fadeIn 1s ease 1.1s forwards; }
+  /* 2026-10-23 TOPは画面6枚分の長さ。中の舞台(.hero-stage)を画面に貼り付けて、文だけを入れ替える。
+     overflow:hidden だと貼り付け(sticky)が効かないので clip を使う */
+  header.hero{ position:relative; z-index:1; height:300svh; overflow:clip; background:#050506; }
+  .hero-stage{ position:sticky; top:0; height:100svh; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+  /* 動画は縦長(9:16)。画面いっぱいに引き伸ばすと箸の先が切れ、PCでは大きくなりすぎるので、
+     全体を収めて(contain)、まわりは同じ絵をぼかして敷く（カード14：inset＋同じ画像のぼかし背景） */
+  .hero-backdrop{ position:absolute; inset:-60px; z-index:0; background:url("media/hero_water.jpg") center/cover no-repeat; filter:blur(34px) brightness(.55); }
+  /* 動画の箱そのものを動画の縦横比(720:1292)にして画面に収め、箱のふちをぼかしてぼかし背景へ溶かす */
+  .hero-video{ position:absolute; left:50%; top:50%; z-index:0; transform:translate(-50%,-50%); width:min(100vw, calc(100svh * 720 / 1292)); height:auto; aspect-ratio:720/1292; object-fit:cover;
+    -webkit-mask-image:linear-gradient(to bottom, transparent 0, #000 9%, #000 91%, transparent 100%), linear-gradient(to right, transparent 0, #000 24%, #000 76%, transparent 100%);
+    -webkit-mask-composite:source-in; mask-image:linear-gradient(to bottom, transparent 0, #000 9%, #000 91%, transparent 100%), linear-gradient(to right, transparent 0, #000 24%, #000 76%, transparent 100%); mask-composite:intersect; }
+  /* スマホ（縦長の画面）では左右は画面の端なので、上下だけぼかす */
+  /* スマホでは詩と箸の間をあけるため、動画を少し下げる（優奈さん10/23「お箸がもう少し下に」） */
+  /* 2026-10-26 PCは横長(16:9)の動画を画面いっぱいに（はみ出す分は舞台で切る）。上下のふちだけ黒へ溶かす */
+  .hero.is-wide .hero-backdrop{ background-image:url("media/hero_water_pc.jpg"); }
+  .hero.is-wide .hero-video{ width:max(100vw, calc(100svh * 16 / 9)); aspect-ratio:16/9;
+    -webkit-mask-image:linear-gradient(to bottom, transparent 0, #000 7%, #000 90%, transparent 100%); mask-image:linear-gradient(to bottom, transparent 0, #000 7%, #000 90%, transparent 100%); }
+  @media (max-aspect-ratio: 3/4){ .hero-video{ top:calc(50% + 9svh); -webkit-mask-image:linear-gradient(to bottom, transparent 0, #000 9%, #000 91%, transparent 100%); mask-image:linear-gradient(to bottom, transparent 0, #000 9%, #000 91%, transparent 100%); } }
+  /* 暗い幕：最初は濃く、スクロールで薄くなる＝夜明けのように少しずつ明るく（--p は0→1、JSで更新） */
+  .hero-shade{ position:absolute; inset:0; z-index:1; pointer-events:none; background:radial-gradient(ellipse 80% 60% at 50% 46%, rgba(5,5,6,.35) 0%, rgba(5,5,6,.92) 100%); opacity:calc(.92 - var(--p,0) * .62); }
+  #canvas3d{ display:none; } /* TOPの3Dの箸は水面の動画に置き換え。01へ向かう箸(#canvas3d-journey)はそのまま */
+  /* 2026-10-26 世界地図を戻す（カズさんMT：インターナショナルに・11月インドでお祭り）。
+     地図データは前と同じ日本中心図法の ohashi-world-map-v2.svg（Fritz Lekschas氏のsimple-world-map、CC BY-SA 3.0 を加工）。
+     見せ方：水面に映ったように、画面の下のほう(動画の水面)にうっすら。しずくが落ちると波紋に合わせて揺れる。
+     前の「最後の画面だけ全面にうっすら」は暗い幕の下でほぼ見えなかったのでやめた。描画はJS（canvas）で、動画の再生位置に合わせる */
+  .world-map-water{ position:absolute; inset:0; z-index:2; width:100%; height:100%; pointer-events:none; mix-blend-mode:screen; opacity:0; transition:opacity 2.4s ease; }
+  .world-map-water.is-on{ opacity:.85; }
+  .hero.is-final .world-map-water.is-on{ opacity:1; }
+  /* 1画面に1文。文は箸の少し上に置く（動画の箸は画面の縦47%あたり）。
+     消える文はぼやけながら透明に(0.6秒)、次の文は12px下からふわっと(0.9秒) */
+  .intro-lines{ position:absolute; z-index:3; left:0; right:0; top:22%; display:grid; justify-items:center; pointer-events:none; }
+  .intro-slide{ grid-area:1/1; text-align:center; opacity:0; filter:blur(8px); transform:translateY(12px); transition:opacity .6s ease, filter .6s ease, transform .6s ease; }
+  .intro-slide.is-active{ opacity:1; filter:blur(0); transform:translateY(0); transition:opacity .9s cubic-bezier(.16,1,.3,1) .25s, filter .9s cubic-bezier(.16,1,.3,1) .25s, transform .9s cubic-bezier(.16,1,.3,1) .25s; }
+  /* 縦書きの詩：右から1行ずつ並ぶ（前の行は消えない）。
+     最後の画面(会社の一文)に変わるときだけ、詩全体がぼやけて消える */
+  .intro-lines{ top:11%; }
+  .intro-poem{ grid-area:1/1; writing-mode:vertical-rl; display:flex; flex-direction:column; align-items:flex-start; gap:clamp(10px,3vw,26px); /* 縦書きの中では column が「右から左へ並ぶ」向き */ transition:opacity .6s ease, filter .6s ease; }
+  .intro-poem.is-out{ opacity:0; filter:blur(8px); }
+  .intro-final{ align-self:center; }
+  .intro-line{ display:block; font-family:"Shippori Mincho",serif; font-weight:500; letter-spacing:.14em; line-height:1.3; font-size:clamp(26px,calc(34svh / 8.6),46px); white-space:nowrap; text-shadow:0 2px 24px rgba(5,5,6,.7);
+    opacity:0; filter:blur(6px); transform:translateY(-10px); transition:opacity .5s ease, filter .5s ease, transform .5s ease; }
+  /* 1行まるごと、ぼかしからふわっと。ゆっくり落ち着いて(1.8秒・優奈さん10/23) */
+  .intro-line.is-shown{ opacity:1; filter:blur(0); transform:translateY(0); transition:opacity 1.8s cubic-bezier(.25,.1,.25,1), filter 1.8s cubic-bezier(.25,.1,.25,1), transform 1.8s cubic-bezier(.25,.1,.25,1); }
+  .intro-line.is-gold{ color:var(--gold2); }
+  .hero-eyebrow{ font-size:clamp(14px,3.6vw,20px); font-weight:400; letter-spacing:.22em; color:var(--gold); margin-bottom:20px; padding-left:.22em; } /* 字の間を詰める(優奈さん10/23) */
+  /* 何の会社かを一文で */
+  .hero-tagline{ font-family:"Shippori Mincho",serif; font-weight:500; font-size:clamp(20px,5.4vw,38px); letter-spacing:.08em; line-height:1.7; text-shadow:0 2px 24px rgba(5,5,6,.7); }
   @keyframes fadeIn{ to{ opacity:1; } }
-  .scroll-cue{ position:absolute; bottom:30px; left:50%; transform:translateX(-50%); z-index:3; font-size:10px; letter-spacing:.3em; color:rgba(245,242,234,.5); opacity:0; animation:fadeIn 1s ease 1.3s forwards; }
+  /* スクロールの案内：縦長のカプセルの中を点が下へ。最初の文の間だけ */
+  .scroll-cue{ position:absolute; bottom:max(28px, env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%); z-index:3; display:flex; flex-direction:column; align-items:center; gap:10px; font-size:10px; font-weight:300; letter-spacing:.35em; color:rgba(245,242,234,.6); opacity:0; animation:fadeIn 1s ease 8.6s forwards; transition:visibility 0s .6s; } /* 詩が並び終わってから */
+  .sc-pill{ position:relative; width:18px; height:30px; border:1px solid rgba(227,176,75,.6); border-radius:10px; }
+  .sc-dot{ position:absolute; left:50%; top:6px; width:4px; height:4px; margin-left:-2px; border-radius:50%; background:var(--gold2); animation:scDot 1.6s ease-in-out infinite; }
+  @keyframes scDot{ 0%{ transform:translateY(0); opacity:0; } 30%{ opacity:1; } 100%{ transform:translateY(12px); opacity:0; } }
+  .hero.is-moved .scroll-cue{ visibility:hidden; animation:none; opacity:0; transition:opacity .6s ease, visibility 0s .6s; }
+  /* 右端の細い進み具合の線（TOPの間だけ） */
+  .intro-progress{ position:absolute; right:10px; top:50%; z-index:3; width:1px; height:84px; margin-top:-42px; background:rgba(245,242,234,.16); }
+  .intro-progress span{ position:absolute; left:0; top:0; width:100%; height:100%; background:var(--gold); transform-origin:top; transform:scaleY(var(--p,0)); }
+  /* 読み込みの幕：CSSだけで必ず消える。2回目以降の表示ではJSが最初から消す */
+  .intro-loader{ position:fixed; inset:0; z-index:100; display:flex; align-items:center; justify-content:center; background:#0b0a0d; animation:ilOut .8s ease 2s forwards; }
+  .intro-loader.is-skip{ display:none; }
+  .il-ring{ position:absolute; width:120px; height:120px; fill:none; stroke:var(--gold); stroke-width:1; }
+  .il-ring circle{ stroke-dasharray:327; stroke-dashoffset:327; animation:ilDraw 1.8s cubic-bezier(.65,0,.35,1) forwards; }
+  .il-ring .il-inner{ stroke-opacity:.45; stroke-dasharray:4 5; animation:none; transform-origin:60px 60px; animation:ilSpin 12s linear infinite; }
+  .il-ring line{ stroke:var(--paper); stroke-opacity:.7; stroke-linecap:round; stroke-dasharray:64; stroke-dashoffset:64; animation:ilDraw 1.2s ease-out .5s forwards; }
+  @property --n{ syntax:'<integer>'; initial-value:0; inherits:false; }
+  .il-count{ position:relative; top:84px; font-family:"Shippori Mincho",serif; font-size:13px; letter-spacing:.2em; color:var(--gold2); counter-reset:n var(--n); animation:ilCount 1.8s cubic-bezier(.65,0,.35,1) forwards; }
+  .il-count::after{ content:counter(n); }
+  @keyframes ilCount{ to{ --n:100; } }
+  @keyframes ilDraw{ to{ stroke-dashoffset:0; } }
+  @keyframes ilSpin{ to{ transform:rotate(360deg); } }
+  @keyframes ilOut{ to{ opacity:0; visibility:hidden; } }
+  @media (prefers-reduced-motion: reduce){
+    .intro-slide, .intro-slide.is-active{ transition:opacity .3s ease; filter:none; transform:none; }
+    .intro-loader{ display:none; }
+  }
   header.hero{ cursor:none; }
   .cursor-tag{ position:fixed; top:0; left:0; z-index:50; width:74px; height:74px; border-radius:50%; border:1px solid rgba(227,176,75,.55); display:flex; align-items:center; justify-content:center; font-size:10px; letter-spacing:.15em; color:var(--gold2); background:rgba(5,5,6,.35); backdrop-filter:blur(2px); pointer-events:none; opacity:0; transform:translate(-50%,-50%) scale(.8); transition:opacity .25s ease, transform .25s ease; }
   .cursor-tag.is-active{ opacity:1; transform:translate(-50%,-50%) scale(1); }
@@ -68,7 +117,7 @@
   #sec01{ z-index:2; }
   #sec02{ z-index:3; }
   #sec03{ z-index:4; }
-  .num-bg{ position:absolute; top:-40px; left:0; font-size:clamp(120px,26vw,340px); font-weight:800; color:rgba(245,242,234,.04); line-height:1; z-index:0; user-select:none; will-change:transform; }
+  .num-bg{ position:absolute; top:-40px; left:0; font-size:clamp(120px,26vw,340px); font-weight:800; color:transparent; -webkit-text-stroke:1px rgba(227,176,75,.55); line-height:1; z-index:0; user-select:none; will-change:transform; }
   .section-content{ position:relative; z-index:1; text-align:center; }
   .eyebrow{ position:relative; display:inline-flex; align-items:center; gap:14px; font-size:11px; letter-spacing:.4em; color:var(--gold); margin-bottom:26px; }
   .eyebrow::before{ content:""; width:0; height:1px; background:var(--gold); transition:width .8s cubic-bezier(.16,1,.3,1); }
@@ -89,6 +138,12 @@
   .big-line em.no-hl::after{ content:""; position:absolute; inset:0; background:linear-gradient(100deg, transparent 40%, rgba(255,217,138,.8) 50%, transparent 60%); background-size:260% 100%; animation:goldShimmer 5s linear infinite; pointer-events:none; }
   @keyframes goldShimmer{ from{ background-position:140% 0; } to{ background-position:-140% 0; } }
   .kinetic.is-in em::before{ transform:scaleX(1); }
+  /* 2026-10-26 優奈さん「元のイメージはそのままに、字だけキラーんと」（03のSTORY.、続いて「物語もそろえて」で02の物語。も）。
+     前は四角い光の帯が文字の箱ごと流れていた → 色・光・速さ(5秒)は元のまま、光を字の形の中だけにする。
+     光の層は data-shine の同じ文字を重ね、その字の形で光の帯を切り抜く */
+  /* 字は1文字ずつの箱(.char)に分かれているため、重ねた光の文字が約0.03字ぶん上にずれる(実測 スマホ1px・PC2px) → その分下げる */
+  .big-line em.no-hl[data-shine]::after{ content:attr(data-shine); inset:auto; left:0; top:.03em; padding:inherit; white-space:nowrap; color:transparent; -webkit-background-clip:text; background-clip:text; }
+  @media (prefers-reduced-motion: reduce){ .big-line em.no-hl[data-shine]::after{ animation:none; background:none; } }
   p.lead{ margin-top:34px; margin-left:auto; margin-right:auto; font-size:15px; line-height:2.1; color:rgba(245,242,234,.7); max-width:560px; opacity:0; transform:translateY(14px); transition:opacity .8s ease .4s, transform .8s ease .4s; }
   .section-content.is-in p.lead{ opacity:1; transform:translateY(0); }
   .mantra{ opacity:0; transform:translateY(14px); transition:opacity .8s ease .6s, transform .8s ease .6s; }
@@ -103,11 +158,18 @@
       radial-gradient(1.6px 1.6px at 46% 18%, rgba(201,162,75,.3), transparent),
       radial-gradient(1.2px 1.2px at 94% 22%, rgba(201,162,75,.22), transparent),
       radial-gradient(1.2px 1.2px at 5% 24%, rgba(201,162,75,.22), transparent),
-      linear-gradient(180deg, #0e0c12 0%, #14101f 3%, var(--paper) 20%, var(--paper) 100%);
+      /* 2026-10-23 トップの終わり(ほぼ黒 #020302)とつなげ、途中は青みの灰色でなく夜明けのような暖かい色を通る */
+      linear-gradient(180deg, #020302 0%, #0d0a07 7%, #2e2418 14%, #7d6a4f 21%, #cfc2a8 26%, var(--paper) 31%, var(--paper) 100%);
     color:var(--ink);
     overflow:hidden;
   }
-  .bridges .num-bg{ color:rgba(5,5,6,.04); }
+  /* 2026-10-23 章の大きな数字は金の細い縁取りに（優奈さん「01が目立たない」）。明るい01の章では少し濃い金 */
+  /* 2026-10-23 優奈さん案C：箸・橋・端は今の並び方のまま間隔を詰めて上へ。01は02・03と同じ大きな背景の数字(金の細い縁取り)に戻す */
+  .bridges .num-bg{ color:transparent; -webkit-text-stroke:1px rgba(165,129,58,.7); }
+  #sec01 .meanings{ margin:28px auto 44px; }
+  #sec01 .meaning-item{ padding:6px 0; }
+  /* 2026-10-26 優奈さん：箸・橋・端の字の右端が線の♦に重なっていたので、字だけ線から離す（線と♦の位置はそのまま） */
+  #sec01 .meaning-kanji{ padding-right:16px; }
   /* 常時ゆったり漂う光（他ページの3D演出とバランスを取るための、控えめな常時アニメーション） */
   .bridges::before, .bridges::after{
     content:""; position:absolute; z-index:0; border-radius:50%; pointer-events:none;
@@ -138,8 +200,8 @@
   .meaning-item:nth-child(3)::after{ animation-delay:.6s; }
   @keyframes nodePulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(165,129,58,.5); } 50%{ box-shadow:0 0 10px 3px rgba(165,129,58,.55); } }
   .meaning-item[style*="--i:0"]{ transition-delay:.1s; }
-  .meaning-item[style*="--i:1"]{ transition-delay:.3s; }
-  .meaning-item[style*="--i:2"]{ transition-delay:.5s; }
+  .meaning-item[style*="--i:1"]{ transition-delay:.2s; }
+  .meaning-item[style*="--i:2"]{ transition-delay:.3s; }
   .section-content.is-in .meaning-item{ opacity:1; transform:translateY(0); }
   .meaning-kanji{ text-align:right; font-size:30px; font-weight:600; letter-spacing:.04em; color:var(--ink); }
   .meaning-text{ text-align:left; font-size:12px; letter-spacing:.05em; color:#8a7d6d; }
@@ -173,7 +235,8 @@
       linear-gradient(rgba(227,176,75,.9), rgba(227,176,75,.9)) bottom right / 2px 16px no-repeat;
   }
   @keyframes storyCardBreathe{ 0%,100%{ box-shadow:0 24px 50px -14px rgba(0,0,0,.65), 0 0 0 rgba(227,176,75,0); } 50%{ box-shadow:0 24px 50px -14px rgba(0,0,0,.65), 0 0 26px rgba(227,176,75,.28); } }
-  .story-card-title{ position:relative; z-index:1; font-family:"Shippori Mincho",serif; font-size:15px; font-weight:600; letter-spacing:.02em; line-height:1.4; }
+  /* 2026-10-26 語の途中で改行しないよう、改行はwbrの位置だけにする（「祭り・フェス／企画運営」） */
+  .story-card-title{ word-break:keep-all; overflow-wrap:anywhere; position:relative; z-index:1; font-family:"Shippori Mincho",serif; font-size:15px; font-weight:600; letter-spacing:.02em; line-height:1.4; }
   .story-card-desc{ position:relative; z-index:1; font-size:10px; line-height:1.7; letter-spacing:.02em; color:rgba(245,242,234,.55); }
   .story-card-num{ position:relative; z-index:1; align-self:flex-end; font-family:"Shippori Mincho",serif; font-size:28px; font-weight:700; color:rgba(245,242,234,.28); }
   /* 写真ではなく、金属的な線画アイコンで各事業を表現（実写よりイラスト調がいいとのご要望） */
@@ -186,9 +249,11 @@
      HERO・02と同じ大きさの文字で直接見せる方式に変更。中身の差し替え自体は維持 */
   .origin-big{ position:relative; margin:56px auto 0; max-width:1000px; min-height:220px; overflow:hidden; transition:min-height .45s ease; }
   /* 中身の切り替えは横スライド（次の内容は右から入り、前の内容は左へ抜ける）。デジタル演出は撤回し、シンプルな動きに統一 */
-  .origin-panel{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0; transform:translateX(90px); transition:opacity .6s ease, transform .6s cubic-bezier(.16,1,.3,1); pointer-events:none; }
-  .origin-panel.is-active{ opacity:1; transform:translateX(0); pointer-events:auto; }
-  .origin-panel.is-leaving{ opacity:0; transform:translateX(-90px); }
+  /* 2026-10-26 前は出る文と入る文が同時に90pxずつ動き、途中で2つの文が重なって端が切れて見えた（スマホで確認）。
+     → 出ていく文が0.35秒で消えてから、次の文が0.35秒遅れて入る。動く幅は24pxに抑えて端で切れないようにする */
+  .origin-panel{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0; transform:translateX(24px); transition:opacity .35s ease, transform .35s ease; pointer-events:none; }
+  .origin-panel.is-active{ opacity:1; transform:translateX(0); pointer-events:auto; transition:opacity .6s ease .35s, transform .7s cubic-bezier(.16,1,.3,1) .35s; }
+  .origin-panel.is-leaving{ opacity:0; transform:translateX(-24px); }
   .origin-panel-text{ font-family:"Shippori Mincho",serif; font-size:clamp(26px,5.6vw,54px); font-weight:600; letter-spacing:.02em; line-height:1.5; color:var(--ink); text-align:center; }
   .origin-panel-text .line{ display:block; }
   .origin-tags{ display:flex; justify-content:center; gap:10px; margin-top:30px; flex-wrap:wrap; }
@@ -259,6 +324,10 @@
   .ci-sub{ display:block; padding:3px 4px 3px 30px; font-size:10.5px; letter-spacing:.05em; color:rgba(245,242,234,.42); transition:color .3s ease; }
   .ci-item:hover, .ci-sub:hover{ color:var(--paper); }
   .ci-now{ display:none; }
+  /* 2026-10-26 章の大きな数字が、PCでは左の目次(左22px・幅約175px)の下に隠れ、スマホでは画面の左端に貼りついていた
+     → PCは目次の右から、スマホは左に16pxあけて置く */
+  .num-bg{ left:16px; }
+  @media(min-width:821px){ .num-bg{ left:216px; } }
   @media(max-width:820px){
     .chapter-index, .chapter-index.is-shown{ left:16px; top:auto; bottom:72px; transform:translateY(10px); opacity:0; pointer-events:none; }
     .chapter-index.is-open{ opacity:1; transform:none; pointer-events:auto; }
@@ -310,18 +379,56 @@
   <a class="nav-contact" href="index.html#sec03">CONTACT →</a>
 </nav>
 
-<header class="hero">
-  <div class="world-map-bg" aria-hidden="true"></div>
-  <canvas id="canvas3d"></canvas>
-  <div class="hero-eyebrow">O — H A — S H I</div>
-  <div class="hero-tagline">国と国、文化と文化を、橋渡しする会社。</div>
-  <div class="hero-type">
-    <span class="hero-line"><span>はしから、</span></span>
-    <span class="hero-line"><span>はしまで、</span></span>
-    <span class="hero-line"><span>はしで、</span></span>
-    <span class="hero-line"><span>はしをかける。</span></span>
+<!-- 2026-10-23 読み込みの幕：金の輪の中で2本の箸が交わり、数字が0→100。CSSだけで約2.8秒で必ず消える -->
+<div class="intro-loader" id="introLoader" aria-hidden="true">
+  <svg class="il-ring" viewBox="0 0 120 120">
+    <circle cx="60" cy="60" r="52" />
+    <circle cx="60" cy="60" r="46" class="il-inner" />
+    <line x1="30" y1="46" x2="92" y2="56" />
+    <line x1="30" y1="74" x2="92" y2="64" />
+  </svg>
+  <span class="il-count"></span>
+</div>
+
+<!-- 2026-10-23 TOPを「1画面に1文」の序章に（Persepolis Reimagined の見せ方を参考。文章は今のサイトのもの）。
+     背景の水面の動画は画面に貼り付けたまま、スクロールで少しずつ明るくなり、文だけが入れ替わる -->
+<header class="hero" id="hero">
+  <div class="hero-stage">
+    <div class="hero-backdrop" aria-hidden="true"></div>
+    <!-- 2026-10-26 PC(横長の画面)は横長の動画、スマホ(縦長の画面)は縦長の動画。
+         data-* は動画ごとの箸の高さ・しずくが落ちる秒と位置・地図の中心（動画の箱に対する割合。地図の揺れと01へ向かう箸の位置合わせに使う） -->
+    <video class="hero-video" muted loop playsinline preload="auto" aria-hidden="true"
+      data-sp="media/hero_water.mp4 media/hero_water.jpg" data-sp-geo=".47 1.3 .5 .565 .74"
+      data-pc="media/hero_water_pc.mp4 media/hero_water_pc.jpg" data-pc-geo=".49 1.5 .51 .61 .78"></video>
+    <script>
+      (function(){
+        var v = document.currentScript.previousElementSibling;
+        var wide = !(window.matchMedia && window.matchMedia('(max-aspect-ratio: 3/4)').matches);
+        var k = wide ? 'pc' : 'sp', f = v.dataset[k].split(' '), g = v.dataset[k + 'Geo'].split(' ');
+        document.getElementById('hero').classList.toggle('is-wide', wide);
+        v.poster = f[1]; v.src = f[0];
+        v.dataset.stickY = g[0]; v.dataset.dropT = g[1]; v.dataset.dropX = g[2]; v.dataset.dropY = g[3]; v.dataset.mapY = g[4];
+      })();
+    </script>
+    <div class="hero-shade" aria-hidden="true"></div>
+    <canvas class="world-map-water" id="worldMapWater" aria-hidden="true"></canvas>
+    <canvas id="canvas3d"></canvas>
+    <div class="intro-lines">
+      <!-- 2026-10-23 優奈さん：縦書きで、右から1行ずつ並んでいく（前の行は消えない） -->
+      <p class="intro-poem">
+        <span class="intro-line">はしから、</span>
+        <span class="intro-line">はしまで、</span>
+        <span class="intro-line">はしで、</span>
+        <span class="intro-line is-gold">はしをかける。</span>
+      </p>
+      <div class="intro-slide intro-final">
+        <div class="hero-eyebrow">O-HA-SHI</div>
+        <p class="hero-tagline">国と国、文化と文化を、<br>橋渡しする会社。</p>
+      </div>
+    </div>
+    <div class="scroll-cue" aria-hidden="true"><span class="sc-pill"><span class="sc-dot"></span></span><span class="sc-text">SCROLL</span></div>
+    <div class="intro-progress" aria-hidden="true"><span id="introBar"></span></div>
   </div>
-  <div class="scroll-cue">SCROLL ↓</div>
 </header>
 <div class="cursor-tag" id="cursorTag">SCROLL</div>
 <canvas id="canvas3d-journey" aria-hidden="true"></canvas>
@@ -376,7 +483,7 @@
     <div class="eyebrow">( WHAT WE DO )</div>
     <p class="lead" style="margin-top:0; margin-bottom:34px;">その物語を、かたちに。</p>
     <p class="big-line kinetic">
-      <span class="kline"><span style="--i:0">四つの<em class="no-hl">物語。</em></span></span>
+      <span class="kline"><span style="--i:0">四つの<em class="no-hl" data-shine="物語。">物語。</em></span></span>
     </p>
   </div>
       <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -426,7 +533,7 @@
         </a>
         <a class="story-card" data-i="2" href="2026-09-13-ohashi-detail-03-matsuri-fes.html">
           <div class="story-card-bg"></div>
-          <div class="story-card-title">祭り・フェス企画運営</div>
+          <div class="story-card-title">祭り・フェス<wbr>企画運営</div>
           <div class="story-card-icon">
            <div class="icon-badge">
             <svg viewBox="0 0 200 200">
@@ -472,7 +579,7 @@
     <div class="eyebrow">( NEXT )</div>
     <p class="big-line kinetic" style="margin:0 auto;">
       <span class="kline"><span style="--i:0">BUILD YOUR</span></span><br>
-      <span class="kline"><span style="--i:1">OWN <em class="no-hl">STORY.</em></span></span>
+      <span class="kline"><span style="--i:1">OWN <em class="no-hl" data-shine="STORY.">STORY.</em></span></span>
     </p>
     <div class="magnetic-wrap">
       <div class="magnetic-ring"></div>
@@ -597,8 +704,8 @@
   const heroEl = document.querySelector('header.hero');
   function checkHeroVisible(){
     const r = heroEl.getBoundingClientRect();
-    // HEROが画面の上へ流れきったら描画を止める
-    visible = window.scrollY < heroEl.offsetHeight;
+    // 2026-10-23 TOPの3Dの箸は水面の動画に置き換えたので描画しない（箸の形・回転の値は01へ向かう箸が引き継ぐ）
+    visible = false;
   }
   window.addEventListener('scroll', checkHeroVisible, {passive:true});
   window.addEventListener('resize', checkHeroVisible);
@@ -636,6 +743,136 @@
   }
   animate();
 
+  // ── 2026-10-23 TOPの序章 ──
+  // 縦書きの詩は、読み込みの幕が消えたあと自動で1行ずつ並ぶ（優奈さん「スクロールのたびでなく自動で」）。
+  // スクロールは、背景を少しずつ明るくすることと、詩から会社の一文へ切り替えることだけに使う。
+  // 序章の長さ（貼り付けている間にスクロールできる量）。01へ向かう箸・章の目次もこの分だけ後ろへずらす
+  function introLen(){ return Math.max(0, heroEl.offsetHeight - window.innerHeight); }
+  (function(){
+    const lines = Array.from(heroEl.querySelectorAll('.intro-line'));
+    const poem = heroEl.querySelector('.intro-poem');
+    const finalSlide = heroEl.querySelector('.intro-final');
+    const video = heroEl.querySelector('.hero-video');
+    const loader = document.getElementById('introLoader');
+    // 読み込みの幕は、同じタブで2回目以降は出さない
+    let seen = false;
+    try{ seen = !!sessionStorage.getItem('ohashiIntroSeen'); sessionStorage.setItem('ohashiIntroSeen', '1'); }catch(e){}
+    if(seen) loader.classList.add('is-skip');
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // 詩：幕が消える時刻(2.6秒)から、1.6秒ごとに1行
+    const START = (seen || reduce) ? 300 : 2600, GAP = reduce ? 0 : 1600;
+    lines.forEach((l, k) => setTimeout(() => l.classList.add('is-shown'), START + k * GAP));
+    // 動画は幕が上がってから最初から再生し、さらに約1秒は静かな水面のまま待つ（すぐ水しぶきにならないように・優奈さん10/23）
+    let videoStarted = false;
+    function playVideo(){ if(!video) return; const pr = video.play(); if(pr && pr.catch) pr.catch(()=>{}); }
+    setTimeout(() => { videoStarted = true; if(video){ try{ video.currentTime = 0; }catch(e){} } playVideo(); }, START + 1000);
+    let lastFinal = null, lastP = -1;
+    function update(){
+      const len = introLen();
+      const p = len > 0 ? Math.max(0, Math.min(1, window.scrollY / len)) : 0;
+      if(Math.abs(p - lastP) > 0.001){ heroEl.style.setProperty('--p', p.toFixed(3)); lastP = p; }
+      // 序章の後半（スクロール45%から）は会社の一文
+      const isFinal = p >= 0.45;
+      if(isFinal !== lastFinal){
+        // 詩を読み終える前にスクロールしても、戻ったときに全部そろっているように
+        if(isFinal) lines.forEach(l => l.classList.add('is-shown'));
+        poem.classList.toggle('is-out', isFinal);
+        finalSlide.classList.toggle('is-active', isFinal);
+        heroEl.classList.toggle('is-final', isFinal);
+        lastFinal = isFinal;
+      }
+      heroEl.classList.toggle('is-moved', window.scrollY > 24);
+    }
+    update();
+    window.addEventListener('scroll', update, {passive:true});
+    window.addEventListener('resize', update);
+    // 画面の外では動画を止めて軽くする
+    if(video && 'IntersectionObserver' in window){
+      new IntersectionObserver(es => es.forEach(e => {
+        if(e.isIntersecting){ if(videoStarted) playVideo(); } else { video.pause(); }
+      }), { threshold:0 }).observe(heroEl);
+    }
+  })();
+
+  // ── 2026-10-26 水面に映る世界地図（カズさんMT：うっすら・水面に映る／浮かぶ・しずくが落ちたら揺れる・下のあたり・日本中心） ──
+  // 動画の水面(箸より下)に、少しつぶした地図を重ねる。地図は横に細く切って描き、切れごとに左右へずらして水の揺れを出す。
+  // 動画(8秒くり返し)のしずくは約1.3秒で動画の中央・縦56%に落ちる → その時刻から波の輪を広げ、5秒ほどで静まる
+  (function(){
+    const cv = document.getElementById('worldMapWater');
+    const video = heroEl.querySelector('.hero-video');
+    if(!cv || !cv.getContext || !video) return;
+    const ctx = cv.getContext('2d');
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // しずくの時刻と位置、地図の中心(どれも動画の箱に対する割合)。動画ごとの値は video の data-* から（PCとスマホで動画が違う）
+    const DROP_T = +video.dataset.dropT || 1.3, DROP_X = +video.dataset.dropX || .5, DROP_Y = +video.dataset.dropY || .565, CENTER_Y = +video.dataset.mapY || .74;
+    const SQUASH = .62;                                              // 水面に寝かせて見えるよう、縦をつぶす
+    const src = document.createElement('canvas'), sctx = src.getContext('2d');
+    let ready = false, dpr = 1, W = 0, H = 0, box = null, map = null, visible = true;
+    const img = new Image();
+    img.onload = () => { ready = true; layout(); };
+    img.src = 'ohashi-world-map-v2.svg';
+    function layout(){
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const r = cv.getBoundingClientRect(); W = r.width; H = r.height;
+      cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+      const v = video.getBoundingClientRect();
+      box = { x: v.left - r.left, y: v.top - r.top, w: v.width, h: v.height };
+      // 大きさ：スマホは画面の横幅いっぱい近く、PCは画面の3分の2まで（動画の外の、ぼかした背景にも広がる）
+      const mw = W < 700 ? W * 1.02 : Math.min(W * .66, box.h * 1.3);
+      const mh = mw * (458.6 / 831.8) * SQUASH;
+      map = { w: mw, h: mh, x: box.x + box.w / 2 - mw / 2, y: box.y + box.h * CENTER_Y - mh / 2 };
+      if(!ready) return;
+      // 地図を薄い金色に染め、ふちを水に溶かしたものを1回だけ作っておく
+      src.width = Math.round(mw * dpr); src.height = Math.round(mh * dpr);
+      sctx.clearRect(0, 0, src.width, src.height);
+      sctx.globalCompositeOperation = 'source-over';
+      // 元の地図は線も塗りもごく薄い(9%・20%)ので、重ねて描いて濃くする
+      for(let i = 0; i < 4; i++) sctx.drawImage(img, 0, 0, src.width, src.height);
+      sctx.globalCompositeOperation = 'source-in';
+      sctx.fillStyle = '#efd7a4'; sctx.fillRect(0, 0, src.width, src.height);
+      sctx.globalCompositeOperation = 'destination-in';
+      const g = sctx.createRadialGradient(src.width / 2, src.height / 2, 0, src.width / 2, src.height / 2, src.width / 2);
+      g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(.62, 'rgba(0,0,0,.9)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+      sctx.save(); sctx.translate(src.width / 2, src.height / 2); sctx.scale(1, src.height / src.width); sctx.translate(-src.width / 2, -src.height / 2);
+      sctx.fillStyle = g; sctx.fillRect(0, -src.height * 4, src.width, src.height * 9); sctx.restore();
+      sctx.globalCompositeOperation = 'source-over';
+      draw(performance.now() / 1000);
+    }
+    function draw(now){
+      if(!ready || !map) return;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, W, H);
+      const age = video.currentTime - DROP_T;                         // しずくが落ちてからの秒数
+      const dropY = box.y + box.h * DROP_Y;
+      const ringR = age > 0 ? age * box.h * .42 : -1;                 // 波の輪の半径（奥行きの向き）。約1秒で地図の上の端に届く
+      const fade = age > 0 ? Math.max(0, 1 - age / 5) : 0;            // 5秒で静まる
+      const STRIP = 2;
+      for(let y = 0; y < map.h; y += STRIP){
+        const sy = map.y + y;
+        let dx = reduce ? 0 : Math.sin(now * 1.1 + y * .09) * .6;     // いつもの、ごく小さなゆらぎ
+        let lift = 0;
+        if(!reduce && fade > 0){
+          const d = Math.abs(sy - dropY) / .32;                       // 水面は奥行きがつぶれて見えるので、縦の距離をのばして測る
+          const k = d - ringR;
+          const env = Math.exp(-(k * k) / (2 * Math.pow(box.h * .07, 2)));
+          dx += Math.sin(k * .05) * 14 * env * fade;
+          lift = env * fade * .5;
+        }
+        ctx.globalAlpha = Math.min(1, .55 + lift);
+        ctx.drawImage(src, 0, y * dpr, src.width, STRIP * dpr, map.x + dx, sy, map.w, STRIP);
+      }
+      ctx.globalAlpha = 1;
+    }
+    function loop(t){ if(visible) draw(t / 1000); requestAnimationFrame(loop); }
+    window.addEventListener('resize', layout);
+    if('IntersectionObserver' in window){
+      new IntersectionObserver(es => es.forEach(e => { visible = e.isIntersecting; }), { threshold:0 }).observe(heroEl);
+    }
+    // 詩の1行目が出るころに、ふわっと見えてくる
+    setTimeout(() => cv.classList.add('is-on'), document.getElementById('introLoader').classList.contains('is-skip') ? 300 : 2600);
+    if(reduce){ setInterval(() => draw(0), 1000); } else { requestAnimationFrame(loop); }
+  })();
+
   // magnetic button
   const btn = document.getElementById('magBtn');
   btn.addEventListener('mousemove', (e)=>{
@@ -671,10 +908,13 @@
   const revealEls = Array.from(document.querySelectorAll('.section-content, footer'));
   function checkReveal(){
     const vh = window.innerHeight;
+    // 2026-10-23 一番下までスクロールしても上端が画面の80%より下に残る塊（スマホ390×844のフッター）が表示されなかったため、
+    // 判定を画面の92%に下げ、ページの一番下に着いたら残りも全部表示する（カード38）
+    const atBottom = window.scrollY + vh >= document.documentElement.scrollHeight - 2;
     revealEls.forEach(el=>{
       if(el.classList.contains('is-in')) return;
       const r = el.getBoundingClientRect();
-      if(r.top < vh * 0.8 && r.bottom > 0){
+      if((r.top < vh * 0.92 || atBottom) && r.bottom > 0){
         el.classList.add('is-in');
         el.querySelectorAll('.kinetic, .eyebrow').forEach(k=>k.classList.add('is-in'));
       }
@@ -919,9 +1159,16 @@
     const wy = p => H/2 - p*px;  // 画面の上からのpx → 3D
     const base = { sw1:0, sw2:0, z:0, ry:0, rx:0.12 };
     // HERO：元のTOPと同じ動き（上下に分かれながら奥へ）。HERO自体が上へ流れた分（ht）も足して、HEROの箸とぴったり重ねる
-    const hp = Math.min(1, s / (vh*0.8));
-    const ht = -heroEl.getBoundingClientRect().top * px;
-    const hero = { x1:0, y1:0.32 + hp*0.9 + ht, r1:PI2, sw1:stick1.rotation.y, x2:0, y2:-0.32 - hp*0.9 + ht, r2:PI2, sw2:stick2.rotation.y, sc:1, z:-2*hp, ry:-0.3, rx:0.18 };
+    // 2026-10-23 TOPは序章の分だけ長くなった。序章が終わって舞台が上へ流れ始めてからの量で動かす
+    const sh = Math.max(0, s - introLen());
+    const hp = Math.min(1, sh / (vh*0.8));
+    const ht = -Math.min(0, heroEl.getBoundingClientRect().bottom - vh) * px;
+    // 動画の箸（動画の高さの47%あたり）の位置にそろえる。スマホでは動画を下げているので、その分だけ下へ
+    const hv = heroEl.querySelector('.hero-video').getBoundingClientRect();
+    const stageTop = Math.min(0, heroEl.getBoundingClientRect().bottom - vh); // 舞台が上へ流れた分（htと同じ）は差し引く
+    const stickY = +heroEl.querySelector('.hero-video').dataset.stickY || 0.47; // 動画の中の箸の高さ（PCとスマホで違う）
+    const vy = -((hv.top - stageTop + hv.height*stickY) - vh/2) * px; // 画面の中央からのずれ（3Dの座標）
+    const hero = { x1:0, y1:0.32 + hp*0.9 + ht + vy, r1:PI2, sw1:stick1.rotation.y, x2:0, y2:-0.32 - hp*0.9 + ht + vy, r2:PI2, sw2:stick2.rotation.y, sc:1, z:-2*hp, ry:-0.3, rx:0.18 };
 
     // ORIGIN：「( ORIGIN )」の上の帯で、端 → 箸 → 橋 と形を変える（TOPの「はしから、はしまで、はしで、はしをかける」と同じ順。「つなぐ」で終える）
     // どれも横向きのまま。向きを返す（裏返す）動きは入れない：画面の中で回すと途中で縦に立ち（立て箸）、奥行きで回すと途中の形が崩れるため
@@ -968,20 +1215,21 @@
     const [ , k1, k2, k3 ] = markTops;
     // スクロールもマウスも止まっていれば、計算も描画もしない（軽くするため）
     const key = s + '|' + markTops.join(',') + '|' + mouseX.toFixed(3) + '|' + mouseY.toFixed(3) + '|' + window.innerWidth + '|' + vh;
-    if(key === lastKey && settled && s > vh) return;
+    if(key === lastKey && settled && s - introLen() > vh) return;
     lastKey = key;
     const now = performance.now();
     const dt = Math.min(0.1, (now - lastT) / 1000);
     lastT = now;
 
     const P = poses(s);
+    const iL = introLen(), sh = s - iL;                // sh：序章が終わってからのスクロール量
     const kCover = k2 - vh*0.8;                        // 四つの物語が下から上がり始める所
     const ctaStart = Math.max(k3 - vh, k2 + vh*0.3);   // CONTACTへ向かい始める所（02のカードで箸が消えきってから）
     // TOPの箸 → 01で左右の端に縦に立つ → 四つの物語の上で一膳に → カードで消える → CONTACTで左右から寄って一膳に
     let pose;
     if(s < kCover){
       // 01が画面を覆いきる少し前に立ち終える（途中で止まると斜めに傾いて見えるため）
-      pose = mixPose(P.hero, P.edge, smooth((s - vh*0.5) / (k1 - vh*0.1 - vh*0.5)));
+      pose = mixPose(P.hero, P.edge, smooth((sh - vh*0.5) / (k1 - iL - vh*0.1 - vh*0.5)));
     } else if(s < ctaStart){
       pose = mixPose(P.edge, P.pair, smooth((s - kCover) / (vh*0.8)));
     } else {
@@ -990,11 +1238,11 @@
     }
 
     // HEROの箸とクロスフェードで入れ替わる。四つの物語のカードを読む間は消え、CONTACTでまた現れる
-    const fadeIn = smooth((s - vh*0.42) / (vh*0.3));
+    const fadeIn = smooth((sh - vh*0.42) / (vh*0.3));
     const mid = 1 - smooth((s - (k2 + vh*0.08)) / (vh*0.2)); // 02のカードで消え、03では出さない（03は専用の箸）
     const target = reduceMotion ? 0 : fadeIn * mid;
     // HEROの箸と入れ替わる間（0.8画面分まで）は追いつき処理をせず、HEROの箸にぴったり重ねる
-    const a = (s < vh*0.8 || !cur) ? 1 : 1 - Math.exp(-dt * EASE);
+    const a = (sh < vh*0.8 || !cur) ? 1 : 1 - Math.exp(-dt * EASE);
     if(!cur) cur = Object.assign({}, pose);
     let diff = 0;
     for(const k in pose){ const d = pose[k] - cur[k]; cur[k] += d * a; diff = Math.max(diff, Math.abs(d)); }
@@ -1004,7 +1252,6 @@
     const op = curOp;
     window.jOp = op;
     jCanvas.style.opacity = op.toFixed(3);
-    if(s < vh * 1.2) canvas.style.opacity = reduceMotion ? '' : (1 - fadeIn).toFixed(3);
     if(op < 0.01) return;
 
     jStick1.position.set(pose.x1, pose.y1, 0); jStick1.rotation.set(0, pose.sw1, pose.r1); jStick1.scale.setScalar(pose.sc);
@@ -1035,7 +1282,7 @@
       const s = window.scrollY, vh = window.innerHeight;
       const max = document.documentElement.scrollHeight - vh;
       bar.style.transform = `scaleX(${max > 0 ? clamp01(s / max) : 0})`;
-      const shown = s > vh * 0.35;
+      const shown = s > introLen() + vh * 0.35; // 序章の間は出さない
       idx.classList.toggle('is-shown', shown);
       now.classList.toggle('is-shown', shown);
       let cur = 0;

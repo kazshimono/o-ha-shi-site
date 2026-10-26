@@ -4,6 +4,22 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>O-HA-SHI合同会社 | 会社概要</title>
+<meta name="description" content="O-HA-SHI合同会社（オハシ）の会社概要。設立2026年8月18日、東京都千代田区神田須田町。海外進出支援・越境EC・祭り／フェス企画運営・こども文化体験。">
+<!-- 2026-10-26 LINE・SNSで共有したときの見た目(OGP)・タブのアイコン。httpsが使えるようになったら http:// を https:// に変える -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="O-HA-SHI合同会社">
+<meta property="og:title" content="O-HA-SHI合同会社 | 会社概要">
+<meta property="og:description" content="O-HA-SHI合同会社（オハシ）の会社概要。設立2026年8月18日、東京都千代田区神田須田町。海外進出支援・越境EC・祭り／フェス企画運営・こども文化体験。">
+<meta property="og:url" content="http://o-ha-shi.com/2026-09-13-ohashi-company-profile.html">
+<meta property="og:image" content="http://o-ha-shi.com/media/ogp.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<!-- 会社情報をGoogle・AI検索に正しく伝える（サイトに書いてある内容だけ） -->
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Organization", "name": "O-HA-SHI合同会社", "alternateName": "オハシ", "url": "http://o-ha-shi.com/", "email": "o.ha.shi.26.8.18@gmail.com", "foundingDate": "2026-08-18", "identifier": {"@type": "PropertyValue", "propertyID": "法人番号", "value": "2010003052416"}, "address": {"@type": "PostalAddress", "postalCode": "101-0041", "addressCountry": "JP", "addressRegion": "東京都", "addressLocality": "千代田区", "streetAddress": "神田須田町一丁目7番8号 Vort秋葉原IV 2階"}, "description": "海外進出支援・越境EC・祭り／フェス企画運営・こども文化体験。国と国、文化と文化を、橋渡しする会社。"}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
@@ -144,7 +160,7 @@
     revealTargets.forEach(el=>{
       if(el.classList.contains('is-in')) return;
       const r = el.getBoundingClientRect();
-      if(r.top < vh * 0.85 && r.bottom > 0) el.classList.add('is-in');
+      if(r.top < vh && r.bottom > 0) /* 2026-10-26 画面に入ったら出す（下15%で空白に見えないように） */ el.classList.add('is-in');
     });
   }
   window.addEventListener('scroll', checkReveal, {passive:true});
